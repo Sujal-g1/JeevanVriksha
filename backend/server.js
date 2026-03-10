@@ -5,8 +5,15 @@ const connectDB = require('./config/db');
 const authRoutes = require("./routes/auth");
 const patientRoutes = require("./routes/patientRoutes");
 const patientDashboard = require("./routes/patient");
+const patientAashaDashboard = require("./routes/patientAsha");
 const vitalRoutes = require("./routes/vitalRoutes");
 const vaccinationRoutes = require("./routes/vaccinationRoutes");
+const dashboardRoutes = require("./routes/dashboard")
+const activityRoutes = require("./routes/activity")
+const pregnancyRoutes = require("./routes/pregnancyRoutes");
+const newbornRoutes = require("./routes/newbornRoutes");
+
+
 
 
 const app = express();
@@ -33,10 +40,15 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/patient", patientDashboard);
+app.use("/api/patientAsha", patientAashaDashboard);
 
 app.use("/api/vitals", vitalRoutes);
 app.use("/api/vaccinations", vaccinationRoutes);
+app.use("/api/dashboard", dashboardRoutes)
+app.use("/api/activity", activityRoutes)
 
+app.use("/api/pregnancy", pregnancyRoutes);
+app.use("/api/newborn", newbornRoutes);
 
 const PORT = process.env.PORT || 5001;
 

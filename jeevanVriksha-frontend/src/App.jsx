@@ -14,11 +14,15 @@ import AshaDashboard from "./Dashboards/AshaDashboard"
 import PatientDashboard from "./Dashboards/PatientDashboard"
 import AdminDashboard from "./Dashboards/AdminDashboard"
 
-import PatientList from "./Pages/patients/PatientList";
-import PatientProfile from "./Pages/patients/PatientProfile";
+import PatientList from "./Pages/patients-Asha/PatientList";
+import PatientProfile from "./Pages/patients-Asha/PatientProfile";
 
 import QRScanner from "./Pages/QRScanner"
 import HealthCard from "./Pages/HealthCard";
+
+import PregnancyDashboard from "./Pages/pregnancy/PregnancyDashboard"
+import NewbornDashboard from "./Pages/newborn/NewbornDashboard"
+import CreatePatient from "./Pages/CreatePatient"
 
 
 // Protected Route Wrapper
@@ -89,6 +93,11 @@ function App() {
 
         <Route path="/scan" element={<QRScanner />} />
         <Route path="/health-card/:id" element={<HealthCard />} />
+
+        <Route path="/pregnancy/:id" element={<PregnancyDashboard/>}/>
+        <Route path="/newborn/:id" element={<NewbornDashboard/>}/>  
+
+        <Route path="/create-patient" element={<CreatePatient/>}/>  
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />

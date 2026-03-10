@@ -1,0 +1,661 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import { QRCodeCanvas } from "qrcode.react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { 
+  User, MapPin, Droplets, Calendar, Activity, 
+  TrendingUp, ShieldCheck, Download, QrCode, Plus, ArrowLeft, 
+  X
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion"; 
+import AshaNavbar from "../../components/AshaNavbar";
+
+const PatientProfile = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [patient, setPatient] = useState(null);
+  const [vitals, setVitals] = useState([]);
+  const [vaccines, setVaccines] = useState([]);
+  const [showQR, setShowQR] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    bloodPressure: "",
+    weight: "",
+    glucose: "",
+    heartRate: "",
+    notes: ""
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+  name: "",
+  village: "",
+  age: "",
+  bloodGroup: "",
+  phone: "",
+  gender: "",
+  allergies: "",
+  isNewborn: false,
+  isPregnant: false
+});
+
+// Update useEffect to sync these from the patient object
+useEffect(() => {
+  if (patient) {
+    setEditData({
+      name: patient.name || "",
+      village: patient.village || "",
+      age: patient.age || "",
+      bloodGroup: patient.bloodGroup || "",
+      phone: patient.phone || "",
+      gender: patient.gender || "Male",
+      allergies: patient.allergies || "None",
+      isNewborn: patient.isNewborn || false,
+      isPregnant: patient.isPregnant || false
+    });
+  }
+}, [patient]);
+
+const handleUpdatePatient = async () => {
+  try {
+    const response = await fetch(`http://localhost:5001/api/patients/update/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editData)
+    });
+
+    if (response.ok) {
+      const updated = await response.json();
+      setPatient(updated);
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    }
+  } catch (err) {
+    alert("Update failed. Please check your connection.");
+  }
+};
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+useEffect(() => {
+
+const loadData = async () => {
+
+try {
+
+const [pRes, vRes, vacRes] = await Promise.all([
+fetch(`http://localhost:5001/api/patients/${id}`),
+fetch(`http://localhost:5001/api/vitals/${id}`),
+fetch(`http://localhost:5001/api/vaccinations/${id}`)
+])
+
+const pData = await pRes.json()
+const vData = await vRes.json()
+const vacData = await vacRes.json()
+
+setPatient(pData || {})
+
+setVitals(Array.isArray(vData) ? vData : [])
+
+setVaccines(Array.isArray(vacData) ? vacData : [])
+
+} catch(err){
+
+console.error("Data loading error:",err)
+
+}
+
+setLoading(false)
+
+}
+
+loadData()
+
+},[id])
+
+  const downloadCard = async () => {
+    const card = document.getElementById("healthCard");
+    const canvas = await html2canvas(card, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    pdf.addImage(imgData, "PNG", 15, 15, 180, 105);
+    pdf.save(`${patient.name}_HealthCard.pdf`);
+  };
+
+  const handleAddVital = async (e) => {
+    e.preventDefault();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const response = await fetch("http://localhost:5001/api/vitals/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ patientId: id, ...formData, recordedBy: user.id })
+    });
+
+    if (response.ok) {
+      alert("Vitals added successfully");
+      fetch(`http://localhost:5001/api/vitals/${id}`).then(res => res.json()).then(setVitals);
+      setFormData({ bloodPressure: "", weight: "", glucose: "", heartRate: "", notes: "" });
+    }
+  };
+
+  const chartData = vitals
+.filter(v => v.weight || v.glucose)
+.map(v => ({
+date: new Date(v.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"short"}),
+weight: Number(v.weight) || 0,
+glucose: Number(v.glucose) || 0
+}))
+.reverse()
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#064a8f] flex items-center justify-center text-white">
+      <Activity className="animate-spin mr-2" /> Loading Patient Record...
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#064a8f] bg-gradient-to-b from-[#064a8f] to-[#1259a1] pb-12">
+      <AshaNavbar />
+
+      <main className="pt-20 px-4 max-w-7xl mx-auto">
+        {/* BREADCRUMB */}
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-2 text-blue-200 text-xs font-bold mb-6 uppercase tracking-widest hover:text-white transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to List
+        </button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT COLUMN: PROFILE & VACCINES */}
+          <div className="lg:col-span-4 space-y-6">
+            
+          {/* PERSONAL INFO CARD - WITH EDIT LOGIC */}
+<div className="bg-white rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
+  <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-50 rounded-full" />
+
+  <div className="flex justify-between items-start mb-6 relative z-10">
+    <div className="flex items-center gap-4">
+      <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+        <User size={32} />
+      </div>
+      <div>
+        {isEditing ? (
+          <input 
+            className="text-xl font-black text-slate-800 border-b-2 border-blue-500 outline-none w-full"
+           value={editData.name || ""}
+            onChange={(e) => setEditData({...editData, name: e.target.value})}
+          />
+        ) : (
+          <h2 className="text-2xl font-black text-slate-800 leading-tight">{patient?.name || "Unknown"}</h2>
+        )}
+        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">ID: {id.slice(-6)}</span>
+      </div>
+    </div>
+    
+    {/* EDIT TOGGLE BUTTON */}
+    <button 
+      onClick={() => isEditing ? handleUpdatePatient() : setIsEditing(true)}
+      className={`p-2 rounded-xl font-bold text-xs transition-all ${isEditing ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}
+    >
+      {isEditing ? "Save Changes" : "Edit Info"}
+    </button>
+  </div>
+
+  <div className="space-y-4 border-t border-slate-50 pt-6 relative z-10">
+    {/* VILLAGE EDIT */}
+    <div className="flex items-center gap-3">
+      <MapPin size={16} className="text-blue-400" />
+      <div className="flex-1">
+        <p className="text-[10px] font-bold text-slate-400 uppercase">Village</p>
+        {isEditing ? (
+          <input 
+            className="w-full font-bold text-slate-700 border-b border-slate-200 outline-none"
+            value={editData.village}
+            onChange={(e) => setEditData({...editData, village: e.target.value})}
+          />
+        ) : (
+          <p className="font-bold text-slate-700">{patient.village}</p>
+        )}
+      </div>
+    </div>
+
+    {/* PHONE EDIT */}
+    <div className="flex items-center gap-3">
+      <Activity size={16} className="text-emerald-500" />
+      <div className="flex-1">
+        <p className="text-[10px] font-bold text-slate-400 uppercase">Contact Number</p>
+        {isEditing ? (
+          <input 
+            className="w-full font-bold text-slate-700 border-b border-slate-200 outline-none"
+            value={editData.phone}
+            onChange={(e) => setEditData({...editData, phone: e.target.value})}
+          />
+        ) : (
+          <p className="font-bold text-slate-700">{patient.phone || "Not Provided"}</p>
+        )}
+      </div>
+    </div>
+
+    {/* Gender Edit */}
+    <div className="flex items-center gap-3">
+  <User size={16} className="text-blue-400" />
+  <div className="flex-1">
+    <p className="text-[10px] font-bold text-slate-400 uppercase">Gender</p>
+
+    {isEditing ? (
+      <select
+        className="w-full border-b outline-none"
+        value={editData.gender}
+        onChange={(e)=>setEditData({...editData, gender:e.target.value})}
+      >
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    ) : (
+      <p className="font-bold text-slate-700">{patient.gender}</p>
+    )}
+
+  </div>
+</div>
+
+    {/* Age and blood Group */}
+
+    <div className="grid grid-cols-2 gap-3 mt-4">
+      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Age</p>
+        {isEditing ? (
+          <input 
+            type="number"
+            className="w-full bg-transparent font-black text-slate-700 outline-none"
+            value={editData.age}
+            onChange={(e) => setEditData({...editData, age: e.target.value})}
+          />
+        ) : (
+          <p className="text-sm font-black text-slate-700">{patient.age} Yrs</p>
+        )}
+      </div>
+      <div className="p-3 bg-rose-50 rounded-2xl border border-rose-100/50">
+        <p className="text-[9px] font-black text-rose-300 uppercase mb-1 text-center">Blood</p>
+        {isEditing ? (
+          <select 
+            className="w-full bg-transparent font-black text-rose-600 outline-none text-center"
+            value={editData.bloodGroup}
+            onChange={(e) => setEditData({...editData, bloodGroup: e.target.value})}
+          >
+            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => (
+              <option key={bg} value={bg}>{bg}</option>
+            ))}
+          </select>
+        ) : (
+          <p className="text-sm font-black text-rose-600 text-center">{patient.bloodGroup}</p>
+        )}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3">
+  <Droplets size={16} className="text-rose-400" />
+
+  <div className="flex-1">
+    <p className="text-[10px] font-bold text-slate-400 uppercase">
+      Allergies
+    </p>
+
+    {isEditing ? (
+      <input
+        value={editData.allergies}
+        onChange={(e)=>setEditData({...editData, allergies:e.target.value})}
+        className="w-full border-b outline-none"
+      />
+    ) : (
+      <p className="font-bold text-slate-700">{patient.allergies}</p>
+    )}
+  </div>
+</div>
+
+{/* Newborn / Pregnancy Toggle */}
+
+<div className="mt-4 space-y-3">
+
+{/* NEWBORN */}
+<label className="flex items-center gap-3 cursor-pointer">
+
+<input
+type="checkbox"
+checked={editData.isNewborn}
+onChange={(e)=>setEditData({
+...editData,
+isNewborn:e.target.checked
+})}
+/>
+
+<span className="text-sm font-bold text-slate-700">
+Newborn
+</span>
+
+</label>
+
+
+{/* PREGNANT */}
+
+{editData.gender === "Female" && (
+
+<label className="flex items-center gap-3 cursor-pointer">
+
+<input
+type="checkbox"
+checked={editData.isPregnant}
+onChange={(e)=>setEditData({
+...editData,
+isPregnant:e.target.checked
+})}
+/>
+
+<span className="text-sm font-bold text-pink-600">
+Pregnant
+</span>
+
+</label>
+
+)}
+
+</div>
+  </div>
+
+  {/* Cancel button only shows during edit */}
+  {isEditing && (
+    <button 
+      onClick={() => setIsEditing(false)}
+      className="w-full mt-4 py-2 text-xs font-bold text-rose-400 hover:text-rose-600 transition-colors"
+    >
+      Discard Changes
+    </button>
+  )}
+
+    {!isEditing && (
+  <>
+    <div className="mt-8 flex gap-2 relative z-10">
+
+      <button
+        onClick={() => setShowQR(!showQR)}
+        className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-2xl text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+      >
+        <QrCode size={16} /> QR Pass
+      </button>
+
+      <button
+        onClick={downloadCard}
+        className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+      >
+        <Download size={16} /> Health Card
+      </button>
+
+    </div>
+
+    {/* Pregnancy Tracker Button */}
+    {patient.isPregnant && (
+      <button
+        onClick={() => navigate(`/pregnancy/${patient._id}`)}
+        className="w-full mt-3 bg-pink-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-pink-600 transition-all"
+      >
+        Pregnancy Tracker
+      </button>
+    )}
+
+    {/* Newborn Tracker Button */}
+    {patient.isNewborn && (
+      <button
+        onClick={() => navigate(`/newborn/${patient._id}`)}
+        className="w-full mt-3 bg-blue-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 transition-all"
+      >
+        Newborn Care
+      </button>
+    )}
+
+  </>
+)}
+
+</div>
+
+            {/* VACCINATION TABLE */}
+           <div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+  <div className="flex items-center gap-2 mb-4">
+    <ShieldCheck className="text-emerald-500" size={20} />
+    <h3 className="font-bold text-slate-800">Vaccinations</h3>
+  </div>
+
+  <div className="space-y-3">
+
+    {vaccines?.length > 0 ? (
+
+      vaccines.map((v) => (
+        <div
+          key={v._id}
+          className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100"
+        >
+          <div>
+            <p className="text-sm font-bold text-slate-700">
+              {v.vaccineName || "Unknown Vaccine"}
+            </p>
+
+            <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+              Due: {v.dueDate ? new Date(v.dueDate).toLocaleDateString() : "N/A"}
+            </p>
+          </div>
+
+          <span
+            className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+              v.status === "Completed"
+                ? "bg-emerald-100 text-emerald-600"
+                : "bg-amber-100 text-amber-600"
+            }`}
+          >
+            {v.status || "Pending"}
+          </span>
+        </div>
+      ))
+
+    ) : (
+
+      <div className="text-center py-6 text-slate-400 text-sm">
+        No vaccination records available
+      </div>
+
+    )}
+
+  </div>
+</div>
+          </div>
+
+          {/* RIGHT COLUMN: VITALS & CHART */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* ADD VITALS FORM */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] p-6">
+              <div className="flex items-center gap-2 mb-6 text-white">
+                <Plus size={20} className="bg-pink-500 rounded-lg p-0.5" />
+                <h3 className="font-bold">Record New Vitals</h3>
+              </div>
+              <form onSubmit={handleAddVital} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">BP (120/80)</label>
+                  <input name="bloodPressure" value={formData.bloodPressure} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Weight (kg)</label>
+                  <input name="weight" value={formData.weight} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Glucose</label>
+                  <input name="glucose" value={formData.glucose} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Heart Rate</label>
+                  <input name="heartRate" value={formData.heartRate} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                </div>
+                <div className="col-span-2 md:col-span-3 space-y-1">
+                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Notes</label>
+                  <input name="notes" value={formData.notes} onChange={handleChange} placeholder="General health notes..." className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                </div>
+                <div className="flex items-end">
+                  <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 rounded-xl text-sm transition-all shadow-lg shadow-pink-900/20">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* CHART SECTION */}
+            <div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="text-blue-500" size={20} />
+                <h3 className="font-bold text-slate-800">Health Trends</h3>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                    <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
+                    <Line type="monotone" dataKey="weight" stroke="#16a34a" strokeWidth={3} dot={{r: 4, fill: '#16a34a'}} activeDot={{r: 6}} />
+                    <Line type="monotone" dataKey="glucose" stroke="#2563eb" strokeWidth={3} dot={{r: 4, fill: '#2563eb'}} activeDot={{r: 6}} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* VITALS TABLE */}
+            <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl">
+              <div className="p-6 border-b border-slate-50 flex items-center gap-2">
+                <Activity className="text-rose-500" size={20} />
+                <h3 className="font-bold text-slate-800">Vitals History</h3>
+              </div>
+              <table className="w-full text-left">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">BP</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Weight</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Glucose</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Heart Rate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {vitals.map(v => (
+                    <tr key={v._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4 text-sm font-bold text-slate-700">{v.bloodPressure}</td>
+                      <td className="p-4 text-sm text-slate-600">{v.weight} kg</td>
+                      <td className="p-4 text-sm text-slate-600">{v.glucose} mg/dL</td>
+                      <td className="p-4 text-sm text-slate-600">{v.heartRate} bpm</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* HIDDEN HEALTH CARD FOR DOWNLOAD */}
+      <div className="fixed -left-[2000px]">
+        <div id="healthCard" className="w-[600px] p-8 bg-white border-[12px] border-blue-600 rounded-[3rem]">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h2 className="text-3xl font-black text-blue-700 leading-none">JeevanVriksha</h2>
+              <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">Digital Health Passport</p>
+            </div>
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold">MARCH 2026</div>
+          </div>
+          <div className="flex gap-8">
+            <div className="w-40 h-40 bg-slate-100 rounded-3xl flex items-center justify-center border-4 border-slate-50">
+              <QRCodeCanvas value={`http://localhost:5173/health-card/${patient?._id}`} size={140} />
+            </div>
+            <div className="flex-1 space-y-2 py-2">
+              <p className="text-xl font-black text-slate-800">{patient?.name}</p>
+              <p className="text-md text-slate-600"><b>Village:</b> {patient?.village}</p>
+              <p className="text-md text-slate-600"><b>Age:</b> {patient?.age} Years</p>
+              <p className="text-md text-slate-600"><b>Blood:</b> {patient?.bloodGroup}</p>
+              <p className="text-xs text-blue-500 font-bold mt-4 uppercase tracking-tighter">Scan to access full history</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL QR OVERLAY - SCROLL-PROOF PORTAL */}
+<AnimatePresence>
+  {showQR && (
+    // We use a Portal logic here by wrapping the fixed div
+    <div className="fixed inset-0 z-[9999] isolate">
+      
+      {/* 1. Backdrop - Forced to cover the entire device screen */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setShowQR(false)}
+        className="fixed inset-0 bg-slate-900/80 backdrop-blur-md"
+        style={{ height: '100vh', width: '100vw' }}
+      />
+
+      {/* 2. Centering Wrapper - Forces the card into the center of the VIEWPORT */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0, y: 40 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 40 }}
+          className="relative bg-white w-full max-w-[340px] rounded-[2.5rem] p-6 shadow-2xl overflow-hidden pointer-events-auto"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Decorative Top Accent */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-pink-500" />
+
+          <div className="text-center mb-6 pt-2">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">Health Pass</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Scan for Full Record</p>
+          </div>
+
+          {/* QR CODE CONTAINER */}
+          <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-5 mb-6 flex items-center justify-center">
+            <div className="w-full aspect-square max-w-[200px]">
+              <QRCodeCanvas 
+                value={`http://localhost:5173/health-card/${patient._id}`} 
+                style={{ width: '100%', height: '100%' }}
+                size={512}
+                level={"H"}
+                includeMargin={false}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-sm font-black text-slate-800">{patient?.name || "Unknown"}</p>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">Verified Asha Digital Record</p>
+            </div>
+
+            <button 
+              onClick={() => setShowQR(false)} 
+              className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-200 active:scale-95 transition-transform"
+            >
+              Close Window
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )}
+</AnimatePresence>
+      
+      
+    </div>
+  );
+};
+
+export default PatientProfile;

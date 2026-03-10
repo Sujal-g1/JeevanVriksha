@@ -160,7 +160,7 @@ const handleGoogleLogin = async () => {
           <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8" />
           <div className="text-center mb-6">
             <img src={Logo} className="w-20 mx-auto mb-2" alt="logo" loading="eager" />
-            <h1 className="text-xl font-bold text-green-900">JeevanVriksha</h1>
+            <h1 className="text-xl font-bold text-green-900">JevanVriksha</h1>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-1">Sign In</h2>
           <p className="text-gray-500 text-sm mb-6">Enter your credentials to continue</p>

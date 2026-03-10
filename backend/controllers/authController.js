@@ -1,11 +1,57 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const Patient = require("../models/Patient");
 const jwt = require("jsonwebtoken");
 const admin = require("../config/firebaseAdmin");
 
 // -------------------   Patient Signup ----------------
+// exports.patientSignup = async (req, res) => {
+//     console.log("Signup API hit");
+//   try {
+
+//     const { name, phone, password } = req.body;
+
+//     if (!name || !phone || !password) {
+//       return res.status(400).json({ message: "All fields required" });
+//     }
+
+//     const existingUser = await User.findOne({ phone });
+
+//     if (existingUser) {
+//       return res.status(400).json({ message: "Phone already registered" });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     const user = new User({
+//       name,
+//       phone,
+//       password: hashedPassword,
+//       role: "patient"
+//     });
+
+//     await user.save();
+
+//     res.status(201).json({
+//       message: "Signup successful"
+//     });
+
+//   } catch (error) {
+
+//   console.log("🔥 SIGNUP ERROR START");
+//   console.log(error);
+//   console.log("🔥 SIGNUP ERROR END");
+
+//   res.status(500).json({
+//     message: "Server error",
+//     error: error.message
+//   });
+// }
+// };
 exports.patientSignup = async (req, res) => {
-    console.log("Signup API hit");
+  console.log("Signup API hit");
+
   try {
 
     const { name, phone, password } = req.body;
@@ -14,15 +60,18 @@ exports.patientSignup = async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
+    // Check existing user
     const existingUser = await User.findOne({ phone });
 
     if (existingUser) {
       return res.status(400).json({ message: "Phone already registered" });
     }
 
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create User
     const user = new User({
       name,
       phone,
@@ -32,21 +81,33 @@ exports.patientSignup = async (req, res) => {
 
     await user.save();
 
+    // 🔥 Create Patient profile automatically
+    const patient = new Patient({
+      name,
+      phone,
+      userId: user._id
+    });
+
+    await patient.save();
+
     res.status(201).json({
-      message: "Signup successful"
+      message: "Signup successful",
+      user,
+      patient
     });
 
   } catch (error) {
 
-  console.log("🔥 SIGNUP ERROR START");
-  console.log(error);
-  console.log("🔥 SIGNUP ERROR END");
+    console.log("🔥 SIGNUP ERROR START");
+    console.log(error);
+    console.log("🔥 SIGNUP ERROR END");
 
-  res.status(500).json({
-    message: "Server error",
-    error: error.message
-  });
-}
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+
+  }
 };
 
 
@@ -435,3 +496,25 @@ exports.staffLogin = async (req, res) => {
   }
 
 };
+
+
+// ---------------- Visit ----------------
+exports.addVisit = async(req,res)=>{
+
+try{
+
+const visit = new Visit(req.body)
+
+await visit.save()
+
+res.json({
+message:"Visit recorded"
+})
+
+}catch(err){
+
+res.status(500).json({message:"Server error"})
+
+}
+
+}

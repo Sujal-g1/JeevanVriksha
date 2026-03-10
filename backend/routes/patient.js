@@ -2,19 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 const verifyToken = require("../middleware/authMiddleware");
-const authorizeRole = require("../middleware/roleMiddleware");
+const patientController = require("../controllers/patientController");
 
-router.get(
-  "/dashboard",
-  verifyToken,
-  authorizeRole("patient"),
-  (req, res) => {
+router.get("/dashboard-data", verifyToken, patientController.getFullDashboardData);
 
-    res.json({
-      message: "Welcome to Patient Dashboard",
-      user: req.user
-    });
-
+router.get("/test", (req, res) => {
+  res.json({ message: "Patient route working" });
 });
+
+
 
 module.exports = router;

@@ -158,7 +158,7 @@ const handleLogin = async (e) => {
           initial={{ y: "70%" }}
           animate={{ y: 0 }}
           transition={{ duration: 1 }}
-          className="relative z-10 w-full h-[92vh] bg-white rounded-t-[40px] shadow-2xl p-8"
+          className="relative z-10 w-full h-[92vh] bg-white/85 rounded-t-[40px] shadow-2xl p-8"
         >
           <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
           <div className="text-center mb-6">
@@ -186,7 +186,7 @@ const handleLogin = async (e) => {
       <div className="hidden md:flex w-full">
         
         {/* LEFT SIDE: BLUE BRANDING CIRCLES */}
-        <div className="w-1/2 items-center justify-center bg-blue-50 relative overflow-hidden flex border-r border-blue-100">
+        {/* <div className="w-1/2 items-center justify-center bg-blue-50 relative overflow-hidden flex border-r border-blue-100">
           
           <motion.div
             animate={{ scale: [1, 1.15, 1], rotate: [0, 10, 0] }}
@@ -212,13 +212,49 @@ const handleLogin = async (e) => {
             <motion.h2
               className="text-4xl font-black text-blue-900 tracking-tighter"
             >
-              Jeevan<span className="text-blue-600"> Vriksha</span>
+              Jeevan<span className="text-blue-600">Vriksha</span>
             </motion.h2>
             <p className="text-blue-800/60 mt-4 text-lg font-medium max-w-xs mx-auto">
                Community Management System
             </p>
           </div>
-        </div>
+        </div> */}
+        
+         <div className="w-1/2 items-center justify-center bg-blue-50 relative overflow-hidden flex">
+                  
+                  {/* THE CIRCLES (Exactly as your original) */}
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 8, repeat: Infinity }}
+                    className="absolute w-72 h-72 bg-blue-200 rounded-full opacity-20"
+                  />
+        
+                  <motion.div
+                    animate={{ scale: [1.1, 1, 1.1] }}
+                    transition={{ duration: 10, repeat: Infinity }}
+                    className="absolute w-96 h-96 bg-blue-300 rounded-full opacity-10"
+                  />
+        
+                  <div className="relative text-center px-10 z-10">
+                    <motion.img
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6 }}
+                      src={Logo}
+                      className="w-36 mx-auto mb-6 drop-shadow-lg"
+                      alt="logo"
+                    />
+                    <motion.h2
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="text-4xl font-bold text-blue-900 tracking-tighter"
+                    >
+                      JeevanVriksha
+                    </motion.h2>
+                    <p className="text-blue-800/60 mt-3 text-lg font-medium">Community Management System</p>
+                  </div>
+                </div>
 
         {/* RIGHT SIDE: LOGIN FORM */}
         <div className="flex w-1/2 items-center justify-center p-12 bg-white">

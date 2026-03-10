@@ -1,23 +1,36 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const visitSchema = new mongoose.Schema({
 
-  patientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Patient"
-  },
+patientId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"User",
+required:true
+},
 
-  ashaId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+ashaId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"User",
+required:true
+},
 
-  symptoms: [String],
+type:{
+type:String,
+enum:["general","pregnancy","vaccination"],
+default:"general"
+},
 
-  diagnosis: String,
+notes:{
+type:String
+},
 
-  notes: String
+vitals:{
+bloodPressure:String,
+weight:Number,
+glucose:Number,
+heartRate:Number
+}
 
-}, { timestamps: true });
+},{timestamps:true})
 
-module.exports = mongoose.model("Visit", visitSchema);
+module.exports = mongoose.model("Visit",visitSchema)

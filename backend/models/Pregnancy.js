@@ -2,20 +2,25 @@ const mongoose = require("mongoose");
 
 const pregnancySchema = new mongoose.Schema({
 
-  patientId: {
+  patientId:{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Patient"
+    ref:"Patient",
+    required:true
   },
 
-  expectedDeliveryDate: Date,
+  trimester:String,
+  dueDate:Date,
 
-  trimester: Number,
+  hemoglobin:Number,
+  bp:String,
+  weight:Number,
 
-  riskLevel: {
-    type: String,
-    enum: ["low", "medium", "high"]
-  }
+  ironTablets:Number,
 
-}, { timestamps: true });
+  notes:String
+
+},{
+  timestamps:true
+});
 
 module.exports = mongoose.model("Pregnancy", pregnancySchema);
