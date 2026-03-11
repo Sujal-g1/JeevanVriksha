@@ -49,62 +49,104 @@ const admin = require("../config/firebaseAdmin");
 //   });
 // }
 // };
+// exports.patientSignup = async (req, res) => {
+//   console.log("Signup API hit");
+
+//   try {
+
+//     const { name, phone, password } = req.body;
+
+//     if (!name || !phone || !password) {
+//       return res.status(400).json({ message: "All fields required" });
+//     }
+
+//     // Check existing user
+//     const existingUser = await User.findOne({ phone });
+
+//     if (existingUser) {
+//       return res.status(400).json({ message: "Phone already registered" });
+//     }
+
+//     // Hash password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     // Create User
+//     const user = new User({
+//       name,
+//       phone,
+//       password: hashedPassword,
+//       role: "patient"
+//     });
+
+//     await user.save();
+
+//     // 🔥 Create Patient profile automatically
+//     const patient = new Patient({
+//       name,
+//       phone,
+//       userId: user._id
+//     });
+
+//     await patient.save();
+
+//     res.status(201).json({
+//       message: "Signup successful",
+//       user,
+//       patient
+//     });
+
+//   } catch (error) {
+
+//     console.log("🔥 SIGNUP ERROR START");
+//     console.log(error);
+//     console.log("🔥 SIGNUP ERROR END");
+
+//     res.status(500).json({
+//       message: "Server error",
+//       error: error.message
+//     });
+
+//   }
+// };
+
 exports.patientSignup = async (req, res) => {
-  console.log("Signup API hit");
 
   try {
 
     const { name, phone, password } = req.body;
 
-    if (!name || !phone || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-
-    // Check existing user
     const existingUser = await User.findOne({ phone });
 
     if (existingUser) {
       return res.status(400).json({ message: "Phone already registered" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create User
-    const user = new User({
+    const user = await User.create({
       name,
       phone,
       password: hashedPassword,
       role: "patient"
     });
 
-    await user.save();
-
-    // 🔥 Create Patient profile automatically
-    const patient = new Patient({
+    const patient = await Patient.create({
+      userId: user._id,
       name,
-      phone,
-      userId: user._id
+      phone
     });
-
-    await patient.save();
 
     res.status(201).json({
       message: "Signup successful",
-      user,
-      patient
+      userId: user._id,
+      patientId: patient._id
     });
 
   } catch (error) {
 
-    console.log("🔥 SIGNUP ERROR START");
-    console.log(error);
-    console.log("🔥 SIGNUP ERROR END");
-
     res.status(500).json({
-      message: "Server error",
-      error: error.message
+      message: "Server error"
     });
 
   }

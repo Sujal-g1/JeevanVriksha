@@ -8,10 +8,10 @@ const userSchema = new mongoose.Schema({
   },
 
   email: {
-  type: String,
-  unique: true,
-  sparse: true
-}, 
+    type: String,
+    unique: true,
+    sparse: true
+  },
 
   phone: {
     type: String,
@@ -23,11 +23,11 @@ const userSchema = new mongoose.Schema({
     type: String
   },
 
- googleId: {
-  type: String,
-  unique: true,
-  sparse: true
-},
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
 
   workerId: {
     type: String

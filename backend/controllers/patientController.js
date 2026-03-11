@@ -2,7 +2,45 @@ const Patient = require("../models/Patient");
 const Vital = require("../models/Vital");
 const Vaccination = require("../models/Vaccination");
 
+exports.getFullDashboardData = async (req, res) => {
+
+  try {
+
+    const patient = await Patient
+      .findOne({ userId: req.user.id })
+      .populate("ashaId", "name workerId");
+
+    if (!patient) {
+      return res.status(404).json({
+        message: "Patient profile not found"
+      });
+    }
+
+    const vitals = await Vital
+      .findOne({ patientId: patient._id })
+      .sort({ createdAt: -1 });
+
+    const vaccinations = await Vaccination
+      .find({ patientId: patient._id });
+
+    res.json({
+      profile: patient,
+      vitals,
+      vaccinations
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
+
+};
+
 // exports.getFullDashboardData = async (req, res) => {
+
 //   try {
 //     // 1. Get the Basic Patient Profile
 //     const patient = await Patient.findOne({ userId: req.user.id });
@@ -145,28 +183,28 @@ const Vaccination = require("../models/Vaccination");
 // };
 
 
-exports.getFullDashboardData = async (req, res) => {
-  try {
-    // 1. Find the patient profile linked to this user ID
-    // req.user.id comes from your verifyToken middleware
-    const patient = await Patient.findOne({ userId: req.user.id });
+// exports.getFullDashboardData = async (req, res) => {
+//   try {
+//     // 1. Find the patient profile linked to this user ID
+//     // req.user.id comes from your verifyToken middleware
+//     const patient = await Patient.findOne({ userId: req.user.id });
 
-    if (!patient) {
-      return res.status(404).json({ message: "Patient profile not found. Please contact your ASHA." });
-    }
+//     if (!patient) {
+//       return res.status(404).json({ message: "Patient profile not found. Please contact your ASHA." });
+//     }
 
-    // 2. Fetch related data from other collections
-    const latestVitals = await Vital.findOne({ patientId: patient._id }).sort({ createdAt: -1 });
-    const vaccinations = await Vaccination.find({ patientId: patient._id });
+//     // 2. Fetch related data from other collections
+//     const latestVitals = await Vital.findOne({ patientId: patient._id }).sort({ createdAt: -1 });
+//     const vaccinations = await Vaccination.find({ patientId: patient._id });
 
-    // 3. Return everything combined
-    res.json({
-      profile: patient,
-      vitals: latestVitals || {},
-      vaccinations: vaccinations || []
-    });
-  } catch (error) {
-    console.error("Dashboard Fetch Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+//     // 3. Return everything combined
+//     res.json({
+//       profile: patient,
+//       vitals: latestVitals || {},
+//       vaccinations: vaccinations || []
+//     });
+//   } catch (error) {
+//     console.error("Dashboard Fetch Error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
