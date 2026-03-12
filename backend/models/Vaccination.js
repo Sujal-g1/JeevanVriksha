@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const vaccinationSchema = new mongoose.Schema({
 
   patientId: {
@@ -7,8 +8,22 @@ const vaccinationSchema = new mongoose.Schema({
     required: true
   },
 
-  vaccineName: String,
-  dueDate: Date,
-  status: String
+  vaccineName: {
+    type: String,
+    required: true
+  },
+
+  doseNumber: Number,
+
+  dateGiven: Date,
+
+  nextDueDate: Date,
+
+  givenBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
 
 }, { timestamps: true });
+
+module.exports = mongoose.model("Vaccination", vaccinationSchema);

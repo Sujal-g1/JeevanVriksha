@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Sliders, MapPin, Maximize, Minimize } from "lucide-react";
 import Logo from "../assets/logo.png";
+import AIChatbot from "./AIChatbot"
+// import { FaMicrophone } from "react-icons/fa";
+import { FaBrain } from "react-icons/fa";
+
 
 const AshaNavbar = () => {
   const [brightness, setBrightness] = useState(100);
   const [zoom, setZoom] = useState(100); // Percentage based
   const [showTools, setShowTools] = useState(false);
-    const [ashaName, setAshaName] = useState("");
+  const [ashaName, setAshaName] = useState("");
+  const [showBot,setShowBot] = useState(false)
 
   useEffect(() => {
     // Apply Brightness
@@ -41,7 +46,20 @@ const AshaNavbar = () => {
         </div>
       </div>
 
+    {/* chatbot */}
+      <button
+      onClick={()=>setShowBot(true)}
+      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-blue-50 px-3 py-1.5 rounded-full text-lg font-bold transition-all border border-white/10"
+        >
+      <FaBrain />
+      </button>
+    {showBot && <AIChatbot close={()=>setShowBot(false)} />}
+      {/* ------------- */}
+
+
+
       <div className="relative">
+        
         <button 
           onClick={() => setShowTools(!showTools)}
           className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-white/10"

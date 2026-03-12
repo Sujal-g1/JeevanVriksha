@@ -5,7 +5,8 @@ const patientSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
+    unique: true
   },
 
   ashaId: {
@@ -39,35 +40,21 @@ const patientSchema = new mongoose.Schema({
   height: Number,
   emergencyContact: String,
 
-  isNewborn: {
-    type: Boolean,
-    default: false
+  pregnancyStatus: {
+    type: String,
+    enum: ["not_pregnant", "pregnant", "delivered"],
+    default: "not_pregnant"
   },
 
-  isPregnant: {
+  expectedDeliveryDate: Date,
+
+  isNewborn: {
     type: Boolean,
     default: false
   }
 
 }, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
-
-
-/* ---------- INDEX ---------- */
-
-patientSchema.index({ userId: 1 }, { unique: true });
-
-
-/* ---------- VIRTUAL RELATIONS ---------- */
-
-patientSchema.virtual("vitals", {
-  ref: "Vital",
-  localField: "_id",
-  foreignField: "patientId"
-});
-
 
 module.exports = mongoose.model("Patient", patientSchema);

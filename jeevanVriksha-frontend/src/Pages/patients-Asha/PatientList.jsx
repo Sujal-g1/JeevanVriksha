@@ -7,39 +7,100 @@ import {
 } from "lucide-react";
 import AshaNavbar from "../../components/AshaNavbar";
 
+// offline
+import { cachePatients, getCachedPatients } from "../../services/patientCacheService";
+
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check local cache first for low-internet speed
-    const cached = localStorage.getItem("cached_patients");
-    if (cached) setPatients(JSON.parse(cached));
+//   useEffect(() => {
+//     // Check local cache first for low-internet speed
+//     const cached = localStorage.getItem("cached_patients");
+//     if (cached) setPatients(JSON.parse(cached));
 
-   const user = JSON.parse(localStorage.getItem("user"));
+//    const user = JSON.parse(localStorage.getItem("user"));
 
-  fetch("http://localhost:5001/api/patientAsha", {
-  headers: {
-    Authorization: `Bearer ${user.token}`
-  }
-  })
-      .then((res) => res.json())
-      .then((data) => {
-  console.log("PATIENT DATA:", data);
+//   fetch("http://localhost:5001/api/patientAsha", {
+//   headers: {
+//     Authorization: `Bearer ${user.token}`
+//   }
+//   })
+//       .then((res) => res.json())
+//       .then((data) => {
+//   console.log("PATIENT DATA:", data);
 
-  const patientArray = Array.isArray(data) ? data : data.patients || [];
+//   const patientArray = Array.isArray(data) ? data : data.patients || [];
 
-  setPatients(patientArray);
-  localStorage.setItem("cached_patients", JSON.stringify(patientArray));
-})
-      .catch(err => console.error("Fetch failed:", err))
-      .finally(() => setLoading(false));
-  }, []);
+//   setPatients(patientArray);
+//   localStorage.setItem("cached_patients", JSON.stringify(patientArray));
+// })
+//       .catch(err => console.error("Fetch failed:", err))
+//       .finally(() => setLoading(false));
+//   }, []);
 
   // ------------------ Searching ---------
-const filteredPatients = useMemo(() => {
+
+
+useEffect(() => {
+  loadPatients();
+}, []);
+
+const loadPatients = async () => {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  try {
+
+    // IF INTERNET AVAILABLE
+    if (navigator.onLine) {
+
+      const res = await fetch(
+        "http://localhost:5001/api/patientAsha",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      const patientArray = Array.isArray(data) ? data : data.patients || [];
+
+      setPatients(patientArray);
+
+      // SAVE TO INDEXEDDB CACHE
+      await cachePatients(patientArray);
+
+    } else {
+
+      // OFFLINE → LOAD FROM CACHE
+      const cached = await getCachedPatients();
+
+      setPatients(cached);
+
+    }
+
+  } catch (err) {
+
+    console.error("Fetch failed:", err);
+
+    // IF NETWORK FAILS → FALLBACK TO CACHE
+    const cached = await getCachedPatients();
+    setPatients(cached);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
+
+  const filteredPatients = useMemo(() => {
 
   if (!Array.isArray(patients)) return [];
 

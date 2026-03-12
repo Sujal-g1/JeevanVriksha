@@ -12,8 +12,7 @@ Recent Activity
 
 <div className="space-y-4">
 
-{activity.map((item)=>{
-
+{Array.isArray(activity) && activity.map((item)=>{
 return(
 
 <div

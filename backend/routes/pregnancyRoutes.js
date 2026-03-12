@@ -1,59 +1,65 @@
 const express = require("express");
 const router = express.Router();
 const Pregnancy = require("../models/Pregnancy");
+const Patient = require("../models/Patient");
 
 
 // GET pregnancy record
-router.get("/:patientId", async(req,res)=>{
+router.get("/:patientId", async (req, res) => {
 
-try{
+  try {
 
-const record = await Pregnancy.findOne({
-patientId:req.params.patientId
-})
+    const record = await Pregnancy.findOne({
+      patientId: req.params.patientId
+    });
 
-res.json(record || {})
+    res.json(record || {});
 
-}catch(err){
+  } catch (err) {
 
-res.status(500).json({message:err.message})
+    res.status(500).json({ message: err.message });
 
-}
+  }
 
-})
+});
 
 
 // UPDATE / CREATE pregnancy record
-router.post("/update", async(req,res)=>{
+router.post("/update", async (req, res) => {
 
-try{
+  try {
 
-const { patientId } = req.body
+    const { patientId } = req.body;
 
-let record = await Pregnancy.findOne({ patientId })
+    let record = await Pregnancy.findOne({ patientId });
 
-if(record){
+    if (record) {
 
-record = await Pregnancy.findOneAndUpdate(
-{patientId},
-req.body,
-{new:true}
-)
+      record = await Pregnancy.findOneAndUpdate(
+        { patientId },
+        req.body,
+        { new: true }
+      );
 
-}else{
+    } else {
 
-record = await Pregnancy.create(req.body)
+      record = await Pregnancy.create(req.body);
 
-}
+    }
 
-res.json(record)
+    // ALWAYS ensure patient flag is correct
+    await Patient.findByIdAndUpdate(patientId, {
+      isPregnant: true
+    });
 
-}catch(err){
+    res.json(record);
 
-res.status(500).json({message:err.message})
+  } catch (err) {
 
-}
+    res.status(500).json({ message: err.message });
 
-})
+  }
+
+});
 
 module.exports = router;

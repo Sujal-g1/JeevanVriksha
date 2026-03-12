@@ -12,6 +12,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion"; 
 import AshaNavbar from "../../components/AshaNavbar";
 
+// offline
+import { cachePatientProfile, getCachedPatientProfile } from "../../services/patientCacheService";
+
+
 const PatientProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -39,8 +43,34 @@ const PatientProfile = () => {
   gender: "",
   allergies: "",
   isNewborn: false,
-  isPregnant: false
+  pregnancyStatus: "not_pregnant"
 });
+
+const [pregnancyExists,setPregnancyExists] = useState(false)
+const [newbornExists,setNewbornExists] = useState(false)
+
+// Inside PatientProfile component
+const checkData = async () => {
+  try {
+    const pregRes = await fetch(`http://localhost:5001/api/pregnancy/${id}`);
+    const pregData = await pregRes.json();
+    // Check if patientId exists in the record
+    setPregnancyExists(!!(pregData && pregData.patientId));
+
+    const newRes = await fetch(`http://localhost:5001/api/newborn/${id}`);
+    const newData = await newRes.json();
+    setNewbornExists(!!(newData && newData.patientId));
+  } catch (err) {
+    console.log("Pregnancy/Newborn fetch error:", err);
+  }
+};
+
+// Keep your initial load
+useEffect(() => {
+  checkData();
+}, [id]);
+
+
 
 // Update useEffect to sync these from the patient object
 useEffect(() => {
@@ -54,69 +84,215 @@ useEffect(() => {
       gender: patient.gender || "Male",
       allergies: patient.allergies || "None",
       isNewborn: patient.isNewborn || false,
-      isPregnant: patient.isPregnant || false
+      pregnancyStatus: patient.pregnancyStatus || "not_pregnant"
     });
   }
 }, [patient]);
 
 const handleUpdatePatient = async () => {
   try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    
+    // Safety check: if gender is not Female, they cannot be pregnant
+  const finalData = {
+  ...editData,
+  
+};
+    console.log("Sending update:", finalData)
     const response = await fetch(`http://localhost:5001/api/patients/update/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editData)
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.token}`
+      },
+      body: JSON.stringify(finalData) // send cleaned data
     });
 
     if (response.ok) {
-      const updated = await response.json();
-      setPatient(updated);
-      setIsEditing(false);
-      alert("Profile updated successfully!");
+     setIsEditing(false);
+
+// reload patient from server
+const refreshed = await fetch(`http://localhost:5001/api/patients/${id}`, {
+  headers: {
+    Authorization: `Bearer ${user.token}`
+  }
+});
+
+const newPatient = await refreshed.json();
+
+setPatient(newPatient);
+await cachePatientProfile({
+  ...newPatient,
+  vitals,
+  vaccines
+});
+
+await checkData();
     }
   } catch (err) {
-    alert("Update failed. Please check your connection.");
+    alert("Update failed.");
   }
 };
+// const handleUpdatePatient = async () => {
+//   try {
+//     const user = JSON.parse(localStorage.getItem("user"));
+//     const response = await fetch(`http://localhost:5001/api/patients/update/${id}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${user.token}`
+//       },
+//       body: JSON.stringify(editData)
+//     });
+
+//     if (response.ok) {
+//       const updated = await response.json();
+//       setPatient(updated);
+//       setIsEditing(false);
+      
+//       await checkData(); 
+//       // ---------------------
+
+//       alert("Profile updated successfully!");
+//     }
+//   } catch (err) {
+//     alert("Update failed. Please check your connection.");
+//   }
+// };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
+  // -----------------
+// useEffect(() => {
+
+//   const loadData = async () => {
+
+//     try {
+
+//       const user = JSON.parse(localStorage.getItem("user"))
+
+//       if (!user?.token) {
+//         console.error("User token missing")
+//         return
+//       }
+
+//       const headers = {
+//         Authorization: `Bearer ${user.token}`
+//       }
+
+//       const [pRes, vRes, vacRes] = await Promise.all([
+//         fetch(`http://localhost:5001/api/patients/${id}`, { headers }),
+//         fetch(`http://localhost:5001/api/vitals/${id}`, { headers }),
+//         fetch(`http://localhost:5001/api/vaccinations/${id}`, { headers })
+//       ])
+
+//       if (!pRes.ok) throw new Error("Patient API failed")
+
+//       const pData = await pRes.json()
+//       const vData = vRes.ok ? await vRes.json() : []
+//       const vacData = vacRes.ok ? await vacRes.json() : []
+
+//       setPatient(pData || {})
+//       setVitals(Array.isArray(vData) ? vData : [])
+//       setVaccines(Array.isArray(vacData) ? vacData : [])
+
+//     } catch (err) {
+
+//       console.error("Data loading error:", err)
+
+//     } finally {
+
+//       setLoading(false)
+
+//     }
+
+//   }
+
+//   loadData()
+
+// }, [id])
+
 useEffect(() => {
 
-const loadData = async () => {
+  const loadData = async () => {
 
-try {
+  const user = JSON.parse(localStorage.getItem("user"))
 
-const [pRes, vRes, vacRes] = await Promise.all([
-fetch(`http://localhost:5001/api/patients/${id}`),
-fetch(`http://localhost:5001/api/vitals/${id}`),
-fetch(`http://localhost:5001/api/vaccinations/${id}`)
-])
+  try {
 
-const pData = await pRes.json()
-const vData = await vRes.json()
-const vacData = await vacRes.json()
+    const headers = {
+      Authorization: `Bearer ${user.token}`
+    }
 
-setPatient(pData || {})
+    if (navigator.onLine) {
 
-setVitals(Array.isArray(vData) ? vData : [])
+      const [pRes, vRes, vacRes] = await Promise.all([
+        fetch(`http://localhost:5001/api/patients/${id}`, { headers }),
+        fetch(`http://localhost:5001/api/vitals/${id}`, { headers }),
+        fetch(`http://localhost:5001/api/vaccinations/${id}`, { headers })
+      ])
 
-setVaccines(Array.isArray(vacData) ? vacData : [])
+      const pData = pRes.ok ? await pRes.json() : null
+      const vData = vRes.ok ? await vRes.json() : []
+      const vacData = vacRes.ok ? await vacRes.json() : []
 
-} catch(err){
+      setPatient(pData || {})
+      setVitals(Array.isArray(vData) ? vData : [])
+      setVaccines(Array.isArray(vacData) ? vacData : [])
 
-console.error("Data loading error:",err)
+      // SAVE PROFILE TO CACHE
+      await cachePatientProfile({
+        ...pData,
+        vitals: vData,
+        vaccines: vacData
+      })
+
+    } else {
+
+      // OFFLINE → LOAD FROM CACHE
+      const cached = await getCachedPatientProfile(id)
+
+      if (cached) {
+
+        setPatient(cached)
+        setVitals(cached.vitals || [])
+        setVaccines(cached.vaccines || [])
+
+      }
+
+    }
+
+  } catch (err) {
+
+    console.log("Offline fallback")
+
+    const cached = await getCachedPatientProfile(id)
+
+    if (cached) {
+
+      setPatient(cached)
+      setVitals(cached.vitals || [])
+      setVaccines(cached.vaccines || [])
+
+    }
+
+  } finally {
+
+    setLoading(false)
+
+  }
 
 }
 
-setLoading(false)
+  loadData()
 
-}
+}, [id])
 
-loadData()
 
-},[id])
+
 
   const downloadCard = async () => {
     const card = document.getElementById("healthCard");
@@ -124,17 +300,23 @@ loadData()
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF();
     pdf.addImage(imgData, "PNG", 15, 15, 180, 105);
-    pdf.save(`${patient.name}_HealthCard.pdf`);
+    pdf.save(`${patient?.name}_HealthCard.pdf`);
   };
 
   const handleAddVital = async (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user"));
     const response = await fetch("http://localhost:5001/api/vitals/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ patientId: id, ...formData, recordedBy: user.id })
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${user.token}`
+  },
+  body: JSON.stringify({
+    patientId: id,
+    ...formData
+  })
+})
 
     if (response.ok) {
       alert("Vitals added successfully");
@@ -143,21 +325,27 @@ loadData()
     }
   };
 
-  const chartData = vitals
-.filter(v => v.weight || v.glucose)
-.map(v => ({
-date: new Date(v.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"short"}),
-weight: Number(v.weight) || 0,
-glucose: Number(v.glucose) || 0
-}))
-.reverse()
+  const chartData = Array.isArray(vitals)
+  ? vitals
+      .filter(v => v.weight || v.glucose)
+      .map(v => ({
+        date: new Date(v.createdAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short"
+        }),
+        weight: Number(v.weight) || 0,
+        glucose: Number(v.glucose) || 0
+      }))
+      .reverse()
+  : []
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#064a8f] flex items-center justify-center text-white">
-      <Activity className="animate-spin mr-2" /> Loading Patient Record...
+  if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#064a8f] text-white">
+      Loading patient record...
     </div>
-  );
-
+  )
+}
   return (
     <div className="min-h-screen bg-[#064a8f] bg-gradient-to-b from-[#064a8f] to-[#1259a1] pb-12">
       <AshaNavbar />
@@ -221,7 +409,7 @@ glucose: Number(v.glucose) || 0
             onChange={(e) => setEditData({...editData, village: e.target.value})}
           />
         ) : (
-          <p className="font-bold text-slate-700">{patient.village}</p>
+          <p className="font-bold text-slate-700">{patient?.village}</p>
         )}
       </div>
     </div>
@@ -260,7 +448,7 @@ glucose: Number(v.glucose) || 0
         <option value="Other">Other</option>
       </select>
     ) : (
-      <p className="font-bold text-slate-700">{patient.gender}</p>
+      <p className="font-bold text-slate-700">{patient?.gender}</p>
     )}
 
   </div>
@@ -279,7 +467,7 @@ glucose: Number(v.glucose) || 0
             onChange={(e) => setEditData({...editData, age: e.target.value})}
           />
         ) : (
-          <p className="text-sm font-black text-slate-700">{patient.age} Yrs</p>
+          <p className="text-sm font-black text-slate-700">{patient?.age} Yrs</p>
         )}
       </div>
       <div className="p-3 bg-rose-50 rounded-2xl border border-rose-100/50">
@@ -295,7 +483,7 @@ glucose: Number(v.glucose) || 0
             ))}
           </select>
         ) : (
-          <p className="text-sm font-black text-rose-600 text-center">{patient.bloodGroup}</p>
+          <p className="text-sm font-black text-rose-600 text-center">{patient?.bloodGroup}</p>
         )}
       </div>
     </div>
@@ -326,14 +514,14 @@ glucose: Number(v.glucose) || 0
 
 {/* NEWBORN */}
 <label className="flex items-center gap-3 cursor-pointer">
-
+{/* Inside the Newborn Toggle */}
 <input
-type="checkbox"
-checked={editData.isNewborn}
-onChange={(e)=>setEditData({
-...editData,
-isNewborn:e.target.checked
-})}
+  type="checkbox"
+  checked={!!editData.isNewborn} // Force boolean with !!
+  onChange={(e) => setEditData({
+    ...editData,
+    isNewborn: e.target.checked // This captures true/false correctly
+  })}
 />
 
 <span className="text-sm font-bold text-slate-700">
@@ -345,25 +533,24 @@ Newborn
 
 {/* PREGNANT */}
 
+{/* PREGNANT TOGGLE - UPDATED */}
 {editData.gender === "Female" && (
-
-<label className="flex items-center gap-3 cursor-pointer">
-
-<input
-type="checkbox"
-checked={editData.isPregnant}
-onChange={(e)=>setEditData({
-...editData,
-isPregnant:e.target.checked
-})}
-/>
-
-<span className="text-sm font-bold text-pink-600">
-Pregnant
-</span>
-
-</label>
-
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="checkbox"
+      // Use !! to ensure it's a true boolean (not undefined/null)
+      checked={editData.pregnancyStatus === "pregnant"} 
+      onChange={(e) =>
+  setEditData({
+    ...editData,
+    pregnancyStatus: e.target.checked ? "pregnant" : "not_pregnant"
+  })
+}
+    />
+    <span className="text-sm font-bold text-pink-600">
+      Pregnant
+    </span>
+  </label>
 )}
 
 </div>
@@ -400,24 +587,44 @@ Pregnant
     </div>
 
     {/* Pregnancy Tracker Button */}
-    {patient.isPregnant && (
+    {/* {pregnancyExists && (
       <button
-        onClick={() => navigate(`/pregnancy/${patient._id}`)}
+        onClick={() => navigate(`/pregnancy/${id}`)}
         className="w-full mt-3 bg-pink-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-pink-600 transition-all"
       >
         Pregnancy Tracker
       </button>
-    )}
+    )} */}
 
     {/* Newborn Tracker Button */}
-    {patient.isNewborn && (
+    {/* {newbornExists && (
       <button
-        onClick={() => navigate(`/newborn/${patient._id}`)}
+        onClick={() => navigate(`/newborn/${id}`)}
         className="w-full mt-3 bg-blue-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 transition-all"
       >
         Newborn Care
       </button>
-    )}
+    )} */}
+
+    {/* Change pregnancyExists to patient?.isPregnant */}
+{patient?.pregnancyStatus === "pregnant" && (
+  <button
+    onClick={() => navigate(`/pregnancy/${id}`)}
+    className="w-full mt-3 bg-pink-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-pink-600 transition-all"
+  >
+    Pregnancy Tracker
+  </button>
+)}
+
+{/* Change newbornExists to patient?.isNewborn */}
+{patient?.isNewborn && (
+  <button
+    onClick={() => navigate(`/newborn/${id}`)}
+    className="w-full mt-3 bg-blue-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 transition-all"
+  >
+    Newborn Care
+  </button>
+)}
 
   </>
 )}

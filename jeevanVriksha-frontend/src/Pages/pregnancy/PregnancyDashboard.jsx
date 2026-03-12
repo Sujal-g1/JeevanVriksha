@@ -61,24 +61,44 @@ alerts.push("🚨 Hypertensive Crisis — Emergency care needed")
 }
   };
 
-  useEffect(() => {
-    fetch(`http://localhost:5001/api/patients/${id}`).then(res => res.json()).then(setPatient);
-    fetch(`http://localhost:5001/api/pregnancy/${id}`).then(res => res.json()).then(data => {
-      if (data) {
-        const formatted = {
-          trimester: data.trimester || "",
-          dueDate: data.dueDate ? data.dueDate.split("T")[0] : "",
-          hemoglobin: data.hemoglobin || "",
-          bp: data.bp || "",
-          weight: data.weight || "",
-          ironTablets: data.ironTablets || "",
-          notes: data.notes || ""
-        };
-        setPregnancy(formatted);
-        checkRisk(formatted);
+ useEffect(() => {
+
+  const loadData = async () => {
+
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    const headers = {
+      Authorization: `Bearer ${user.token}`
+    }
+
+    const pRes = await fetch(`http://localhost:5001/api/patients/${id}`, { headers })
+    const pregRes = await fetch(`http://localhost:5001/api/pregnancy/${id}`, { headers })
+
+    const patientData = await pRes.json()
+    const pregData = await pregRes.json()
+
+    setPatient(patientData)
+
+    if (pregData) {
+      const formatted = {
+        trimester: pregData.trimester || "",
+        dueDate: pregData.dueDate ? pregData.dueDate.split("T")[0] : "",
+        hemoglobin: pregData.hemoglobin || "",
+        bp: pregData.bp || "",
+        weight: pregData.weight || "",
+        ironTablets: pregData.ironTablets || "",
+        notes: pregData.notes || ""
       }
-    });
-  }, [id]);
+
+      setPregnancy(formatted)
+      checkRisk(formatted)
+    }
+
+  }
+
+  loadData()
+
+}, [id])
 
  const handleChange = (e) => {
 const updated = {
@@ -93,14 +113,26 @@ checkRisk(updated)
 };
 
   const saveData = async () => {
-    await fetch("http://localhost:5001/api/pregnancy/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ patientId: id, ...pregnancy })
-    });
-   checkRisk(pregnancy)
-    alert("Pregnancy data saved successfully!");
-  };
+
+  const user = JSON.parse(localStorage.getItem("user"))
+
+  await fetch("http://localhost:5001/api/pregnancy/update", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${user.token}`
+    },
+    body: JSON.stringify({
+      patientId: id,
+      ...pregnancy
+    })
+  })
+
+  checkRisk(pregnancy)
+
+  alert("Pregnancy data saved successfully!")
+
+}
 
   if (!patient) return null;
 

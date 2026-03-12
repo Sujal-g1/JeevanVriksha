@@ -1,40 +1,58 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const User = require("../models/User")
-const Visit = require("../models/Visit")
+const Patient = require("../models/Patient");
+const Pregnancy = require("../models/Pregnancy");
+const Newborn = require("../models/Newborn");
+const Vaccination = require("../models/Vaccination");
+const Visit = require("../models/Visit");
 
-router.get("/stats", async (req,res)=>{
+router.get("/stats", async (req, res) => {
 
-try{
+try {
 
-const patients = await User.countDocuments({ role:"patient" })
+const patients = await Patient.countDocuments();
 
-const visits = await Visit.countDocuments({
-createdAt:{
-$gte:new Date().setHours(0,0,0,0)
-}
-})
+const pregnant = await Patient.countDocuments({
+pregnancyStatus: "pregnant"
+});
 
-const pregnancy = await Visit.countDocuments({
-type:"pregnancy"
-})
+const newborns = await Newborn.countDocuments();
 
-const vaccines = await Visit.countDocuments({
-type:"vaccination"
-})
+const vaccineDue = await Vaccination.countDocuments({
+nextDueDate: { $gte: new Date() }
+});
+
+const startOfDay = new Date();
+startOfDay.setHours(0,0,0,0);
+
+const visitsToday = await Visit.countDocuments({
+createdAt: { $gte: startOfDay }
+});
+
+const highRisk = await Pregnancy.countDocuments({
+hemoglobin: { $lt: 10 }
+});
 
 res.json({
 patients,
-pregnancy,
-vaccines,
-visits
-})
+pregnant,
+highRisk,
+newborns,
+vaccineDue,
+visitsToday
+});
 
-}catch(err){
-res.status(500).json({message:"Server error"})
+} catch (err) {
+
+console.error("Dashboard stats error:", err);
+
+res.status(500).json({
+message: "Error loading dashboard stats"
+});
+
 }
 
-})
+});
 
-module.exports = router
+module.exports = router;

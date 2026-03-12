@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const vitalSchema = new mongoose.Schema({
 
   patientId: {
@@ -7,9 +8,16 @@ const vitalSchema = new mongoose.Schema({
     required: true
   },
 
-  bloodPressure: String,
-  heartRate: Number,
   weight: Number,
-  glucose: Number
+  bloodPressure: String,
+  hemoglobin: Number,
+  temperature: Number,
+
+  recordedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
 
 }, { timestamps: true });
+
+module.exports = mongoose.model("Vital", vitalSchema);

@@ -43,16 +43,18 @@ onChange={(e)=>setVitals({...vitals,bloodPressure:e.target.value})}
 
 <input
 placeholder="Weight"
+onChange={(e)=>setVitals({...vitals,weight:e.target.value})}
 />
 
 <input
 placeholder="Glucose"
+onChange={(e)=>setVitals({...vitals,glucose:e.target.value})}
 />
 
-<textarea
-placeholder="Notes"
+<input
+placeholder="Heart Rate"
+onChange={(e)=>setVitals({...vitals,heartRate:e.target.value})}
 />
-
 <button onClick={handleSubmit}>
 Save Visit
 </button>

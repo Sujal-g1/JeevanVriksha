@@ -3,6 +3,8 @@ import {useNavigate} from "react-router-dom"
 import AshaNavbar from "../components/AshaNavbar"
 import { ArrowLeft } from "lucide-react"
 
+import { addToQueue } from "../services/offlineQueueService";
+
 const CreatePatient = ()=>{
 
 const navigate = useNavigate()
@@ -23,37 +25,99 @@ setForm({...form,[e.target.name]:e.target.value})
 }
 
 
-const handleSubmit = async(e)=>{
+// const handleSubmit = async(e)=>{
 
-e.preventDefault()
+// e.preventDefault()
 
-const user = JSON.parse(localStorage.getItem("user"))
+// const user = JSON.parse(localStorage.getItem("user"))
 
-const res = await fetch(
-"http://localhost:5001/api/patientAsha/create",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${user.token}`
-},
-body:JSON.stringify(form)
-}
-)
+// const res = await fetch(
+// "http://localhost:5001/api/patientAsha/create",
+// {
+// method:"POST",
+// headers:{
+// "Content-Type":"application/json",
+// Authorization:`Bearer ${user.token}`
+// },
+// body:JSON.stringify(form)
+// }
+// )
 
-const data = await res.json()
+// const data = await res.json()
 
-if(res.ok){
+// if(res.ok){
 
-alert("Patient created")
+// alert("Patient created")
 
-navigate("/patients")
+// navigate("/patients")
 
-}else{
+// }else{
 
-alert(data.message)
+// alert(data.message)
 
-}
+// }
+
+// }
+
+const handleSubmit = async (e) => {
+
+  e.preventDefault()
+
+  const user = JSON.parse(localStorage.getItem("user"))
+
+  // CHECK INTERNET
+  if (navigator.onLine) {
+
+    try {
+
+      const res = await fetch(
+        "http://localhost:5001/api/patientAsha/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`
+          },
+          body: JSON.stringify(form)
+        }
+      )
+
+      const data = await res.json()
+
+      if (res.ok) {
+
+        alert("Patient created")
+        navigate("/patients")
+
+      } else {
+
+        alert(data.message)
+
+      }
+
+    } catch (err) {
+
+      alert("Network error")
+
+    }
+
+  } else {
+
+    console.log("OFFLINE MODE: Saving patient to queue");
+
+
+    // OFFLINE MODE
+    await addToQueue(
+      "CREATE_PATIENT",
+      "/api/patientAsha/create",
+      form
+    )
+
+    alert("No internet. Patient saved offline and will sync later.")
+
+    navigate("/patients")
+
+  }
 
 }
 
