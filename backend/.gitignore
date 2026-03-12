@@ -2,3 +2,5 @@
 config/serviceAccountKey.json
 
 .env
+
+serviceAccountKey.json
