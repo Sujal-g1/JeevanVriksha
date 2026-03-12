@@ -9,6 +9,8 @@ import AshaNavbar from "../components/AshaNavbar";
 import ActivityFeed from "../components/ActivityFeed";
 import TodoPage from "../Pages/TodoPage"
 
+const API = import.meta.env.VITE_API_URL;
+
 const AshaDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -36,8 +38,7 @@ const [todoText,setTodoText] = useState("")
   const sendReminder = async (task) => {
 
   try {
-
-    await fetch("http://localhost:5001/api/reminders/send",{
+    await fetch(`${API}/api/reminders/send`,{
       method:"POST",
       headers:{
         "Content-Type":"application/json"
@@ -61,7 +62,7 @@ const fetchTasks = async () => {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
 
-    const res = await fetch("http://localhost:5001/api/tasks/today", {
+    const res = await fetch(`{API}/api/tasks/today`, {
       headers: {
         Authorization: `Bearer ${user.token}`
       }
@@ -81,7 +82,7 @@ const markComplete = async (taskId) => {
 
   try {
 
-    await fetch(`http://localhost:5001/api/tasks/${taskId}`,{
+    await fetch(`${API}/api/tasks/${taskId}`,{
       method:"PATCH",
       headers:{
         "Content-Type":"application/json"
@@ -111,24 +112,24 @@ const markComplete = async (taskId) => {
       const user = JSON.parse(localStorage.getItem("user"))
 
       const [sRes, aRes, alertRes , taskRes] = await Promise.all([
-  fetch("http://localhost:5001/api/dashboard/stats",{
+  fetch(`${API}/api/dashboard/stats`,{
     headers:{
       Authorization:`Bearer ${user.token}`
     }
   }),
 
-  fetch("http://localhost:5001/api/activity",{
+  fetch(`${API}/api/activity`,{
     headers:{
       Authorization:`Bearer ${user.token}`
     }
   }),
 
-  fetch("http://localhost:5001/api/alerts",{
+  fetch(`${API}/api/alerts`,{
     headers:{
       Authorization:`Bearer ${user.token}`
     }
   }),
-  fetch("http://localhost:5001/api/tasks/today",{
+  fetch(`${API}/api/tasks/today`,{
     headers:{ Authorization:`Bearer ${user.token}` }
   })
   

@@ -1,5 +1,7 @@
 import db from "../db/offlineQueueDB";
 
+const API = import.meta.env.VITE_API_URL;
+
 export const syncQueue = async () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -12,7 +14,7 @@ export const syncQueue = async () => {
 
     try {
 
-      const res = await fetch(`http://localhost:5001${item.endpoint}`, {
+      const res = await fetch(`${API}${item.endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

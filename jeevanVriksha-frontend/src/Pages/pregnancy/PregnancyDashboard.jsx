@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const API = import.meta.env.VITE_API_URL;
+
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   CartesianGrid, ResponsiveContainer
@@ -71,8 +73,8 @@ alerts.push("🚨 Hypertensive Crisis — Emergency care needed")
       Authorization: `Bearer ${user.token}`
     }
 
-    const pRes = await fetch(`http://localhost:5001/api/patients/${id}`, { headers })
-    const pregRes = await fetch(`http://localhost:5001/api/pregnancy/${id}`, { headers })
+    const pRes = await fetch(`${API}/api/patients/${id}`, { headers })
+    const pregRes = await fetch(`${API}/api/pregnancy/${id}`, { headers })
 
     const patientData = await pRes.json()
     const pregData = await pregRes.json()
@@ -116,7 +118,7 @@ checkRisk(updated)
 
   const user = JSON.parse(localStorage.getItem("user"))
 
-  await fetch("http://localhost:5001/api/pregnancy/update", {
+  await fetch(`${API}/api/pregnancy/update`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -12,6 +12,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion"; 
 import AshaNavbar from "../../components/AshaNavbar";
 
+const API = import.meta.env.VITE_API_URL;
+
 // offline
 import { cachePatientProfile, getCachedPatientProfile } from "../../services/patientCacheService";
 
@@ -52,12 +54,12 @@ const [newbornExists,setNewbornExists] = useState(false)
 // Inside PatientProfile component
 const checkData = async () => {
   try {
-    const pregRes = await fetch(`http://localhost:5001/api/pregnancy/${id}`);
+    const pregRes = await fetch(`${API}/api/pregnancy/${id}`);
     const pregData = await pregRes.json();
     // Check if patientId exists in the record
     setPregnancyExists(!!(pregData && pregData.patientId));
 
-    const newRes = await fetch(`http://localhost:5001/api/newborn/${id}`);
+    const newRes = await fetch(`${API}/api/newborn/${id}`);
     const newData = await newRes.json();
     setNewbornExists(!!(newData && newData.patientId));
   } catch (err) {
@@ -99,7 +101,7 @@ const handleUpdatePatient = async () => {
   
 };
     console.log("Sending update:", finalData)
-    const response = await fetch(`http://localhost:5001/api/patients/update/${id}`, {
+    const response = await fetch(`${API}/api/patients/update/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -112,7 +114,7 @@ const handleUpdatePatient = async () => {
      setIsEditing(false);
 
 // reload patient from server
-const refreshed = await fetch(`http://localhost:5001/api/patients/${id}`, {
+const refreshed = await fetch(`${API}/api/patients/${id}`, {
   headers: {
     Authorization: `Bearer ${user.token}`
   }
@@ -230,9 +232,9 @@ useEffect(() => {
     if (navigator.onLine) {
 
       const [pRes, vRes, vacRes] = await Promise.all([
-        fetch(`http://localhost:5001/api/patients/${id}`, { headers }),
-        fetch(`http://localhost:5001/api/vitals/${id}`, { headers }),
-        fetch(`http://localhost:5001/api/vaccinations/${id}`, { headers })
+        fetch(`${API}/api/patients/${id}`, { headers }),
+        fetch(`${API}/api/vitals/${id}`, { headers }),
+        fetch(`${API}/api/vaccinations/${id}`, { headers })
       ])
 
       const pData = pRes.ok ? await pRes.json() : null
@@ -306,7 +308,7 @@ useEffect(() => {
   const handleAddVital = async (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user"));
-    const response = await fetch("http://localhost:5001/api/vitals/add", {
+    const response = await fetch(`${API}/api/vitals/add`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -320,7 +322,7 @@ useEffect(() => {
 
     if (response.ok) {
       alert("Vitals added successfully");
-      fetch(`http://localhost:5001/api/vitals/${id}`).then(res => res.json()).then(setVitals);
+      fetch(`${API}/api/vitals/${id}`).then(res => res.json()).then(setVitals);
       setFormData({ bloodPressure: "", weight: "", glucose: "", heartRate: "", notes: "" });
     }
   };

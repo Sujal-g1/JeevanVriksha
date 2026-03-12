@@ -1,3 +1,5 @@
+const API = import.meta.env.VITE_API_URL;
+
 const VisitPatient = () => {
 
 const { id } = useParams()
@@ -13,7 +15,7 @@ const [notes,setNotes] = useState("")
 
 const handleSubmit = async()=>{
 
-await fetch("http://localhost:5001/api/visit/add",{
+await fetch(`${API}/api/visit/add`,{
 
 method:"POST",
 headers:{

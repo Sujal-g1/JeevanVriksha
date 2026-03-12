@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import Logo from "../assets/logo.png";
 import Startpage from "../assets/startpage.png";
 
+const API = import.meta.env.VITE_API_URL;
+
 const LoginForm = ({ handleLogin, workerId, setWorkerId, password, setPassword, loading }) => (
   <form onSubmit={handleLogin} className="space-y-5">
 
@@ -107,7 +109,7 @@ const handleLogin = async (e) => {
     console.log("🚀 Login process started...");
 
     try {
-        const response = await fetch("http://localhost:5001/api/auth/staff-login", {
+        const response = await fetch(`${API}/api/auth/staff-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
 

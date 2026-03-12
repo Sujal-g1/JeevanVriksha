@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Logo from "../assets/logo.png";
 import Startpage from "../assets/startpage.png";
 
+const API = import.meta.env.VITE_API_URL;
 
 const SignupForm = ({
   handleSignup,
@@ -112,7 +113,7 @@ const SignupPatient = () => {
 
     try{
 
-      const res = await fetch("http://localhost:5001/api/auth/signup",{
+      const res = await fetch(`${API}X X/api/auth/signup`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json"

@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import AshaNavbar from "../../components/AshaNavbar";
 
+const API = import.meta.env.VITE_API_URL;
+
 // offline
 import { cachePatients, getCachedPatients } from "../../services/patientCacheService";
 
@@ -58,7 +60,7 @@ const loadPatients = async () => {
     if (navigator.onLine) {
 
       const res = await fetch(
-        "http://localhost:5001/api/patientAsha",
+        `${API}/api/patientAsha`,
         {
           headers: {
             Authorization: `Bearer ${user.token}`

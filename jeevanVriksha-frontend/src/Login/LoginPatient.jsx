@@ -52,6 +52,9 @@ const LoginForm = ({ handleLogin, identifier, setIdentifier, password, setPasswo
   </form>
 );
 
+
+const API = import.meta.env.VITE_API_URL;
+
 const LoginPatient = ({ setUser }) => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -66,7 +69,7 @@ const handleLogin = async (e) => {
 
   try {
 
-    const response = await fetch("http://localhost:5001/api/auth/login", {
+    const response = await fetch(`${API}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -115,7 +118,7 @@ const handleGoogleLogin = async () => {
 
   const token = await result.user.getIdToken();
 
-  const response = await fetch("http://localhost:5001/api/auth/google", {
+  const response = await fetch(`${API}/api/auth/google`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

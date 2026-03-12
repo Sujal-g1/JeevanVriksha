@@ -1,12 +1,14 @@
 import db from "../db/offlineDB";
 
+const API = import.meta.env.VITE_API_URL;
+
 export const savePatient = async (patientData) => {
 
   if (navigator.onLine) {
 
     try {
 
-      await fetch("http://localhost:5001/api/patients", {
+      await fetch(`${API}/api/patients`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

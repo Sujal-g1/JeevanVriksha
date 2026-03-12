@@ -33,7 +33,15 @@ connectDB();
 //   methods: ["GET", "POST", "PUT", "DELETE"],
 //   credentials: true
 // }));
-app.use(cors());
+// app.use(cors());
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://your-frontend.vercel.app"
+  ],
+  credentials: true
+}));
 
 app.get("/", (req, res) => {
   res.send("Server is working");

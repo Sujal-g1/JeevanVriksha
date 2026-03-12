@@ -1,5 +1,7 @@
 import db from "../db/offlineDB";
 
+const API = import.meta.env.VITE_API_URL;
+
 export const syncPatients = async () => {
 
   const all = await db.patients.toArray();
@@ -10,7 +12,7 @@ const unsynced = all.filter(p => p.synced === false);
 
     try {
 
-      await fetch("http://localhost:5001/api/patients", {
+      await fetch(`${API}/api/patients`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

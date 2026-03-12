@@ -3,6 +3,8 @@ import AshaNavbar from "../components/AshaNavbar"
 import { ArrowLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
+const API = import.meta.env.VITE_API_URL;
+
 const Alerts = () => {
 
    const navigate = useNavigate();  
@@ -15,7 +17,7 @@ const fetchAlerts = async()=>{
 
 const user = JSON.parse(localStorage.getItem("user"))
 
-const res = await fetch("http://localhost:5001/api/alerts",{
+const res = await fetch(`${API}/api/alerts`,{
 headers:{
 Authorization:`Bearer ${user.token}`
 }

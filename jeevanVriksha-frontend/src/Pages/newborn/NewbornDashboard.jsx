@@ -3,6 +3,8 @@ import { useParams,useNavigate } from "react-router-dom";
 import AshaNavbar from "../../components/AshaNavbar";
 import { ArrowLeft, Baby } from "lucide-react";
 
+const API = import.meta.env.VITE_API_URL;
+
 const NewbornDashboard = () => {
 
 const { id } = useParams();
@@ -19,11 +21,11 @@ notes:""
 
 useEffect(()=>{
 
-fetch(`http://localhost:5001/api/patients/${id}`)
+fetch(`${API}/api/patients/${id}`)
 .then(res=>res.json())
 .then(setPatient)
 
-fetch(`http://localhost:5001/api/newborn/${id}`)
+fetch(`${API}/api/newborn/${id}`)
 .then(res=>res.json())
 .then(data=>{
 if(data) setNewborn(data)
@@ -39,7 +41,7 @@ setNewborn({...newborn,[e.target.name]:e.target.value})
 
 const saveData = async()=>{
 
-await fetch("http://localhost:5001/api/newborn/update",{
+await fetch(`${API}/api/newborn/update`,{
 method:"POST",
 headers:{
 "Content-Type":"application/json"

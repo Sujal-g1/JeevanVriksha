@@ -3,6 +3,9 @@ import { ClipboardList, CheckCircle, ArrowLeft } from "lucide-react";
 import AshaNavbar from "../components/AshaNavbar";
 import { useNavigate } from "react-router-dom";
 
+
+const API = import.meta.env.VITE_API_URL;
+
 const TodoPage = () => {
 
 const [tasks,setTasks] = useState([])
@@ -19,7 +22,7 @@ const fetchTasks = async () => {
 
 try{
 
-const res = await fetch("http://localhost:5001/api/tasks")
+const res = await fetch(`${API}/api/tasks`)
 const data = await res.json()
 
 setTasks(data)
@@ -88,8 +91,8 @@ try{
 const user = JSON.parse(localStorage.getItem("user"))
 
 const url = editingTaskId
-? `http://localhost:5001/api/tasks/${editingTaskId}`
-: "http://localhost:5001/api/tasks/create"
+? `${API}/api/tasks/${editingTaskId}`
+: `${API}/api/tasks/create`
 
 const method = editingTaskId ? "PATCH" : "POST"
 
@@ -126,7 +129,7 @@ const markComplete = async (id) => {
 
 try{
 
-    await fetch(`http://localhost:5001/api/tasks/${id}`,{
+    await fetch(`${API}/api/tasks/${id}`,{
 method:"PATCH",
 headers:{
 "Content-Type":"application/json"

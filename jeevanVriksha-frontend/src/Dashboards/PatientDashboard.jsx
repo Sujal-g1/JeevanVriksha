@@ -11,6 +11,8 @@ import AlertsPanel from "../components/patientDashboardData/AlertsPanel";
 
 import { Menu, Loader2 } from "lucide-react";
 
+const API = import.meta.env.VITE_API_URL;
+
 const PatientDashboard = () => {
 
   const [profile, setProfile] = useState({});
@@ -31,7 +33,7 @@ const PatientDashboard = () => {
         if(!user) return;
 
         const res = await axios.get(
-          "http://localhost:5001/api/patient/dashboard-data",
+          `${API}/api/patient/dashboard-data`,
           {
             headers:{
               Authorization:`Bearer ${user.token}`

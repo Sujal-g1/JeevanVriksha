@@ -1,5 +1,7 @@
 import db from "../db/offlineDB";
 
+const API = import.meta.env.VITE_API_URL;
+
 export const syncVitals = async () => {
 
   const allVitals = await db.vitals.toArray();
@@ -12,7 +14,7 @@ export const syncVitals = async () => {
 
     try {
 
-      const res = await fetch("http://localhost:5001/api/vitals/add", {
+      const res = await fetch(`${API}/api/vitals/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

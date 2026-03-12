@@ -3,6 +3,8 @@ import {useNavigate} from "react-router-dom"
 import AshaNavbar from "../components/AshaNavbar"
 import { ArrowLeft } from "lucide-react"
 
+const API = import.meta.env.VITE_API_URL;
+
 import { addToQueue } from "../services/offlineQueueService";
 
 const CreatePatient = ()=>{
