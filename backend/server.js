@@ -9,7 +9,6 @@ const patientRoutes = require("./routes/patientRoutes");
 const patientAashaDashboard = require("./routes/patientAsha");
 const vitalRoutes = require("./routes/vitalRoutes");
 const vaccinationRoutes = require("./routes/vaccinationRoutes");
-const dashboardRoutes = require("./routes/dashboard")
 const activityRoutes = require("./routes/activity")
 const pregnancyRoutes = require("./routes/pregnancyRoutes");
 const newbornRoutes = require("./routes/newbornRoutes");
@@ -19,6 +18,8 @@ const medicineRoutes = require("./routes/medicineRoutes");
 const aiRoutes = require("./routes/aiRoutes")
 
 const taskRoutes = require("./routes/tasks")
+const visitRoutes = require("./routes/visitRoutes")
+const dashboardRoutes = require("./routes/dashboardRoutes")
 
 
 
@@ -71,6 +72,9 @@ app.use("/api/alerts", require("./routes/alerts"))
 app.use("/api/ai", aiRoutes)
 
 app.use("/api/tasks", taskRoutes)
+
+app.use("/api/visits",visitRoutes)
+app.use("/api/dashboard",dashboardRoutes)
 
 const PORT = process.env.PORT || 5001;
 

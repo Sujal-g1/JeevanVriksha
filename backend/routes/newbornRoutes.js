@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Newborn = require("../models/Newborn");
+const { generateNewbornVaccines } = require("../utils/generateNewbornVaccines")
 
 
 router.get("/:patientId", async(req,res)=>{
@@ -31,6 +32,9 @@ req.body,
 }else{
 
 record = await Newborn.create(req.body)
+
+// generate vaccination schedule
+await generateNewbornVaccines(patientId, new Date())
 
 }
 

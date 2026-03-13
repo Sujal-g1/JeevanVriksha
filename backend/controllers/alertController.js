@@ -1,14 +1,12 @@
 const Vital = require("../models/Vital")
 const Pregnancy = require("../models/Pregnancy")
 const Newborn = require("../models/Newborn")
+const Vaccination = require("../models/Vaccination")
 
 exports.getAlerts = async (req, res) => {
   try {
 
     const alerts = [];
-
-    const Newborn = require("../models/Newborn");
-    const Vital = require("../models/Vital");
 
     // Pregnancy vitals alerts
     const vitals = await Vital.find().populate("patientId", "name");
@@ -43,7 +41,24 @@ exports.getAlerts = async (req, res) => {
 
     });
 
+ // Vaccine overdue alerts
+    const overdueVaccines = await Vaccination.find({
+status:"pending",
+dueDate:{ $lt:new Date() }
+}).populate("patientId","name")
+
+overdueVaccines.forEach(v=>{
+
+alerts.push({
+type:"warning",
+message:`Vaccine overdue for ${v.patientId?.name} (${v.vaccineName})`
+})
+
+})
+
     res.json(alerts);
+
+    
 
   } catch (err) {
 

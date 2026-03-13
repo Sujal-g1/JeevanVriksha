@@ -52,3 +52,36 @@ exports.getVaccinations = async (req, res) => {
   }
 
 };
+
+// ASHA to Mark Vaccine Completed
+exports.completeVaccination = async (req,res)=>{
+
+try{
+
+const vaccine = await Vaccination.findByIdAndUpdate(
+
+req.params.id,
+
+{
+status:"completed",
+dateGiven:new Date()
+},
+
+{ new:true }
+
+)
+
+res.json({
+message:"Vaccination completed",
+vaccine
+})
+
+}catch(err){
+
+res.status(500).json({
+message:"Server error"
+})
+
+}
+
+}

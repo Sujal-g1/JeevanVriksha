@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import { 
   User, MapPin, Droplets, Calendar, Activity, 
   TrendingUp, ShieldCheck, Download, QrCode, Plus, ArrowLeft, 
-  X
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
 import AshaNavbar from "../../components/AshaNavbar";
@@ -48,6 +48,7 @@ const PatientProfile = () => {
   pregnancyStatus: "not_pregnant"
 });
 
+const [isVacExpanded, setIsVacExpanded] = useState(false);
 const [pregnancyExists,setPregnancyExists] = useState(false)
 const [newbornExists,setNewbornExists] = useState(false)
 
@@ -634,52 +635,115 @@ Newborn
 </div>
 
             {/* VACCINATION TABLE */}
-           <div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
-  <div className="flex items-center gap-2 mb-4">
-    <ShieldCheck className="text-emerald-500" size={20} />
-    <h3 className="font-bold text-slate-800">Vaccinations</h3>
-  </div>
+         
+<div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+  <button 
+    onClick={() => setIsVacExpanded(!isVacExpanded)} // Add [isVacExpanded, setIsVacExpanded] = useState(false) at the top
+    className="w-full flex items-center justify-between mb-2 group"
+  >
+    <div className="flex items-center gap-2">
+      <ShieldCheck className="text-emerald-500" size={20} />
+      <h3 className="font-bold text-slate-800">Vaccination Tracker</h3>
+      <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
+        {vaccines?.length || 0}
+      </span>
+    </div>
+    <div className={`text-slate-400 transition-transform duration-300 ${isVacExpanded ? 'rotate-180' : ''}`}>
+      <ChevronDown size={20} className={isVacExpanded ? 'rotate-90' : ''} />
+    </div>
+  </button>
 
-  <div className="space-y-3">
+  <AnimatePresence>
+    {isVacExpanded && (
+      <motion.div 
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        className="overflow-hidden"
+      >
+        <div className="space-y-3 pt-4 border-t border-slate-50">
+          {vaccines?.length > 0 ? (
+            vaccines.map((v) => {
 
-    {vaccines?.length > 0 ? (
+  const today = new Date();
+  const due = new Date(v.dueDate);
 
-      vaccines.map((v) => (
-        <div
-          key={v._id}
-          className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100"
-        >
-          <div>
-            <p className="text-sm font-bold text-slate-700">
-              {v.vaccineName || "Unknown Vaccine"}
-            </p>
+  const canComplete =
+    today.setHours(0,0,0,0) >= due.setHours(0,0,0,0);
 
-            <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
-              Due: {v.dueDate ? new Date(v.dueDate).toLocaleDateString() : "N/A"}
-            </p>
-          </div>
+  let statusColor = "bg-gray-100 text-gray-600";
+  let label = "Upcoming";
 
-          <span
-            className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
-              v.status === "Completed"
-                ? "bg-emerald-100 text-emerald-600"
-                : "bg-amber-100 text-amber-600"
-            }`}
-          >
-            {v.status || "Pending"}
-          </span>
+              if (v.status === "completed") {
+                statusColor = "bg-emerald-100 text-emerald-600";
+                label = "Completed";
+              } else if (due < today) {
+                statusColor = "bg-red-100 text-red-600";
+                label = "Overdue";
+              } else if (due <= today) {
+                statusColor = "bg-amber-100 text-amber-600";
+                label = "Due";
+              }
+
+              return (
+                <div
+                  key={v._id}
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100"
+                >
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">{v.vaccineName}</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">
+                      Due: {new Date(v.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${statusColor}`}>
+                      {label}
+                    </span>
+
+                     {v.status !== "completed" && canComplete && (
+<button
+onClick={async ()=>{
+
+const user = JSON.parse(localStorage.getItem("user"))
+
+await fetch(`${API}/api/vaccinations/complete/${v._id}`,{
+method:"PATCH",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${user.token}`
+}
+})
+
+const res = await fetch(`${API}/api/vaccinations/${id}`)
+const data = await res.json()
+setVaccines(data)
+
+}}
+className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg"
+>
+Complete
+</button>
+)}
+                    
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-6 text-slate-400 text-sm">
+              No vaccination records available
+            </div>
+          )}
         </div>
-      ))
-
-    ) : (
-
-      <div className="text-center py-6 text-slate-400 text-sm">
-        No vaccination records available
-      </div>
-
+      </motion.div>
     )}
-
-  </div>
+  </AnimatePresence>
+  
+  {!isVacExpanded && (
+    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Click to view schedule</p>
+  )}
 </div>
           </div>
 

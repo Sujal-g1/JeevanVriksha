@@ -17,3 +17,4 @@ timestamps:true
 })
 
 module.exports = mongoose.model("Newborn", newbornSchema);
+

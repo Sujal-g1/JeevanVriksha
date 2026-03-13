@@ -13,11 +13,19 @@ const vaccinationSchema = new mongoose.Schema({
     required: true
   },
 
-  doseNumber: Number,
+  status: {
+    type: String,
+    enum: ["pending", "completed"],
+    default: "pending"
+  },
 
-  dateGiven: Date,
+  dateGiven: {
+    type: Date
+  },
 
-  nextDueDate: Date,
+  dueDate: {
+    type: Date
+  },
 
   givenBy: {
     type: mongoose.Schema.Types.ObjectId,

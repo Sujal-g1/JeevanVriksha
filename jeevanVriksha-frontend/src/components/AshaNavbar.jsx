@@ -12,6 +12,7 @@ const AshaNavbar = () => {
   const [showTools, setShowTools] = useState(false);
   const [ashaName, setAshaName] = useState("");
   const [showBot,setShowBot] = useState(false)
+  const [locationName, setLocationName] = useState("Fetching...");
 
   useEffect(() => {
     // Apply Brightness
@@ -32,6 +33,50 @@ const AshaNavbar = () => {
 }, []);
 
 
+// live location
+  useEffect(() => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await res.json();
+          if (data && data.address) {
+            const city =
+              data.address.city ||
+              data.address.town ||
+              data.address.village ||
+              data.address.state ||
+              "Unknown";
+            const country = data.address.country_code?.toUpperCase() || "";
+            const fullLocation = `${city}, ${country}`;
+
+            setLocationName(fullLocation);
+           
+          } else {
+            setLocationName("Unknown location");
+          }
+        } catch (err) {
+          console.error("Reverse geocode failed:", err);
+          setLocationName("Location error");
+        }
+      },
+      (err) => {
+        console.warn("GPS error:", err);
+        setLocationName("Location unavailable");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
+    );
+  } else {
+    setLocationName("Geolocation not supported");
+  }
+}, []);
+
+
+
   return (
     <nav className="fixed top-0 left-0 w-full h-14 bg-[#064a8f] border-b border-white/10 flex items-center justify-between px-4 z-[100] shadow-md">
       <div className="flex items-center gap-3">
@@ -41,7 +86,8 @@ const AshaNavbar = () => {
              {ashaName || "ASHA Worker"}
           </h1>
           <div className="flex items-center gap-1 text-[9px] text-blue-200 font-medium">
-            <MapPin size={8} /> live location
+            <MapPin size={8} />
+             <span className="truncate">{locationName}</span>  
           </div>
         </div>
       </div>
