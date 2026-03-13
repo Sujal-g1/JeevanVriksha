@@ -33,6 +33,13 @@ router.post(
   medicineController.distributeMedicine
 );
 
+/* GET ASHA STOCK */
+router.get(
+  "/my-stock",
+  verifyToken,
+  authorizeRole("asha"),
+  medicineController.getAshaStock
+);
 
 /* PATIENT CONFIRMS MEDICINE */
 router.post(
@@ -48,6 +55,14 @@ router.get(
   "/patient/:patientId",
   verifyToken,
   medicineController.getPatientMedicines
+);
+
+
+/* GET ALL MEDICINES */
+router.get(
+  "/all",
+  verifyToken,
+  medicineController.getAllMedicines
 );
 
 module.exports = router;

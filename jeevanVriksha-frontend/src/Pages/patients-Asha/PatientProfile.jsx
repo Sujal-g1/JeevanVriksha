@@ -52,6 +52,108 @@ const [isVacExpanded, setIsVacExpanded] = useState(false);
 const [pregnancyExists,setPregnancyExists] = useState(false)
 const [newbornExists,setNewbornExists] = useState(false)
 
+//  medicine 
+const [medicines, setMedicines] = useState([])
+const [showMedicineForm, setShowMedicineForm] = useState(false)
+const [medicineList, setMedicineList] = useState([])
+const [medicineData, setMedicineData] = useState({
+  medicineId:"",
+  quantity:""
+})
+
+// medicine fn
+
+const fetchPatientMedicines = async () => {
+
+  try {
+
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    const res = await fetch(`${API}/api/medicine/patient/${id}`,{
+      headers:{
+        Authorization:`Bearer ${user.token}`
+      }
+    })
+
+    const data = await res.json()
+
+    setMedicines(data)
+
+  } catch(err){
+    console.log("Medicine fetch error",err)
+  }
+
+}
+
+const fetchMedicines = async () => {
+
+  try{
+
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    const res = await fetch(`${API}/api/medicine/all`,{
+      headers:{
+        Authorization:`Bearer ${user.token}`
+      }
+    })
+
+    const data = await res.json()
+
+    setMedicineList(data)
+
+  }catch(err){
+    console.log("Medicine list error",err)
+  }
+
+}
+
+// handle submit medicine
+const giveMedicine = async () => {
+
+  try{
+
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    const res = await fetch(`${API}/api/medicine/distribute`,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${user.token}`
+      },
+
+      body:JSON.stringify({
+        patientId:id,
+        medicineId:medicineData.medicineId,
+        quantity:Number(medicineData.quantity)
+      })
+
+    })
+
+    if(res.ok){
+
+      alert("Medicine given successfully")
+
+      setShowMedicineForm(false)
+
+      setMedicineData({
+        medicineId:"",
+        quantity:""
+      })
+
+      fetchPatientMedicines()
+
+    }
+
+  }catch(err){
+
+    console.log(err)
+
+  }
+
+}
+
 // Inside PatientProfile component
 const checkData = async () => {
   try {
@@ -168,56 +270,6 @@ await checkData();
   };
 
 
-  // -----------------
-// useEffect(() => {
-
-//   const loadData = async () => {
-
-//     try {
-
-//       const user = JSON.parse(localStorage.getItem("user"))
-
-//       if (!user?.token) {
-//         console.error("User token missing")
-//         return
-//       }
-
-//       const headers = {
-//         Authorization: `Bearer ${user.token}`
-//       }
-
-//       const [pRes, vRes, vacRes] = await Promise.all([
-//         fetch(`http://localhost:5001/api/patients/${id}`, { headers }),
-//         fetch(`http://localhost:5001/api/vitals/${id}`, { headers }),
-//         fetch(`http://localhost:5001/api/vaccinations/${id}`, { headers })
-//       ])
-
-//       if (!pRes.ok) throw new Error("Patient API failed")
-
-//       const pData = await pRes.json()
-//       const vData = vRes.ok ? await vRes.json() : []
-//       const vacData = vacRes.ok ? await vacRes.json() : []
-
-//       setPatient(pData || {})
-//       setVitals(Array.isArray(vData) ? vData : [])
-//       setVaccines(Array.isArray(vacData) ? vacData : [])
-
-//     } catch (err) {
-
-//       console.error("Data loading error:", err)
-
-//     } finally {
-
-//       setLoading(false)
-
-//     }
-
-//   }
-
-//   loadData()
-
-// }, [id])
-
 useEffect(() => {
 
   const loadData = async () => {
@@ -245,6 +297,8 @@ useEffect(() => {
       setPatient(pData || {})
       setVitals(Array.isArray(vData) ? vData : [])
       setVaccines(Array.isArray(vacData) ? vacData : [])
+      fetchPatientMedicines()
+      fetchMedicines()
 
       // SAVE PROFILE TO CACHE
       await cachePatientProfile({
@@ -349,6 +403,7 @@ useEffect(() => {
     </div>
   )
 }
+
   return (
     <div className="min-h-screen bg-[#064a8f] bg-gradient-to-b from-[#064a8f] to-[#1259a1] pb-12">
       <AshaNavbar />
@@ -744,6 +799,107 @@ Complete
   {!isVacExpanded && (
     <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Click to view schedule</p>
   )}
+</div>
+
+{/* MEDICINE SECTION */}
+
+<div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+
+  <div className="flex justify-between items-center mb-4">
+
+    <h3 className="font-bold text-slate-800">
+      Medicines Given
+    </h3>
+
+    <button
+      onClick={()=>setShowMedicineForm(!showMedicineForm)}
+      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg"
+    >
+      + Give Medicine
+    </button>
+
+  </div>
+
+
+  {showMedicineForm && (
+
+    <div className="space-y-3 mb-4">
+
+      <select
+        value={medicineData.medicineId}
+        onChange={(e)=>setMedicineData({...medicineData,medicineId:e.target.value})}
+        className="w-full border rounded-lg p-2 text-sm"
+      >
+
+        <option value="">Select Medicine</option>
+
+        {medicineList.map(m => (
+          <option key={m._id} value={m._id}>
+            {m.name}
+          </option>
+        ))}
+
+      </select>
+
+
+      <input
+        type="number"
+        placeholder="Quantity"
+        value={medicineData.quantity}
+        onChange={(e)=>setMedicineData({...medicineData,quantity:e.target.value})}
+        className="w-full border rounded-lg p-2 text-sm"
+      />
+
+
+      <button
+        onClick={giveMedicine}
+        className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs"
+      >
+        Save
+      </button>
+
+    </div>
+
+  )}
+
+
+  <div className="space-y-2">
+
+    {medicines.length === 0 && (
+      <p className="text-sm text-gray-400">
+        No medicines given yet
+      </p>
+    )}
+
+    {medicines.map(m => (
+
+      <div
+        key={m._id}
+        className="flex justify-between items-center border p-2 rounded-lg"
+      >
+
+        <div>
+
+          <p className="font-semibold text-sm">
+            {m.medicineId?.name}
+          </p>
+
+          <p className="text-xs text-gray-400">
+            {new Date(m.givenDate).toLocaleDateString()}
+          </p>
+
+        </div>
+
+        <span className="text-sm font-bold">
+          {m.quantity}
+        </span>
+
+      </div>
+
+    ))}
+
+  </div>
+
 </div>
           </div>
 
