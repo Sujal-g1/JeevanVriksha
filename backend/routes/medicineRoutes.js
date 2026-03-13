@@ -65,4 +65,37 @@ router.get(
   medicineController.getAllMedicines
 );
 
+// get all asha stock by admin
+router.get(
+  "/admin/asha-stock",
+  verifyToken,
+  authorizeRole("admin"),
+  medicineController.getAllAshaStock
+);
+
+// GET MEDICINE STATS
+router.get(
+  "/admin/medicine-stats",
+  verifyToken,
+  authorizeRole("admin"),
+  medicineController.getMedicineStats
+);
+
+// GET FRAUD ALERTS
+router.get(
+  "/admin/fraud-alerts",
+  verifyToken,
+  authorizeRole("admin"),
+  medicineController.getFraudAlerts
+);
+
+// GET STOCK ALERTS
+router.get(
+  "/admin/low-stock-alerts",
+  verifyToken,
+  authorizeRole("admin"),
+  medicineController.getLowStockAlerts
+);
+
+
 module.exports = router;

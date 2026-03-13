@@ -34,6 +34,8 @@ import { syncPatients } from "./services/syncPatients";
 //  Queue offline
 import { syncQueue } from "./services/queueSyncService";
 
+import { syncMedicineQueue } from "./services/syncMedicineQueue";
+
 // Protected Route Wrapper
 const ProtectedRoute = ({ user, role, children }) => {
 
@@ -56,6 +58,25 @@ function App() {
     }
   }, []);
 
+  // -------
+useEffect(() => {
+
+  const handleOnline = () => {
+
+    console.log("Internet restored. Syncing medicine queue...");
+
+    syncMedicineQueue();
+
+  };
+
+  window.addEventListener("online", handleOnline);
+
+  return () => {
+    window.removeEventListener("online", handleOnline);
+  };
+
+}, []);
+
 // --------
 useEffect(() => {
 
@@ -63,6 +84,7 @@ useEffect(() => {
     syncVitals();
     syncPatients();
     syncQueue();
+    syncMedicineQueue();
   };
 
   window.addEventListener("online", handleOnline);

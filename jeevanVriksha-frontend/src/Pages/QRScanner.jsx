@@ -12,15 +12,28 @@ const QRScanner = () => {
         Scan Patient Health Card
       </h1>
 
-      <Scanner
-        onScan={(result) => {
-          if (result) {
-            const url = result[0].rawValue;
+     <Scanner
+  onScan={(result) => {
+    if (result && result.length > 0) {
 
-            navigate(url.replace(window.location.origin, ""));
-          }
-        }}
-      />
+      const scannedUrl = result[0].rawValue;
+
+      try {
+
+        const parsed = new URL(scannedUrl);
+
+        navigate(parsed.pathname);
+
+      } catch (err) {
+
+        console.log("Invalid QR:", scannedUrl);
+
+      }
+
+    }
+  }}
+/>
+
 
     </div>
   );

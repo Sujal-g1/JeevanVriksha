@@ -16,7 +16,7 @@ const API = import.meta.env.VITE_API_URL;
 
 // offline
 import { cachePatientProfile, getCachedPatientProfile } from "../../services/patientCacheService";
-
+import { distributeMedicine } from "../../services/medicineService";
 
 const PatientProfile = () => {
   const { id } = useParams();
@@ -34,7 +34,7 @@ const PatientProfile = () => {
     heartRate: "",
     notes: ""
   });
-
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
   name: "",
@@ -60,6 +60,7 @@ const [medicineData, setMedicineData] = useState({
   medicineId:"",
   quantity:""
 })
+const [isMedExpanded, setIsMedExpanded] = useState(false)
 
 // medicine fn
 
@@ -113,6 +114,14 @@ const giveMedicine = async () => {
   try{
 
     const user = JSON.parse(localStorage.getItem("user"))
+
+    const payload = {
+      patientId: id,
+      medicineId: medicineData.medicineId,
+      quantity: Number(medicineData.quantity)
+    }
+
+    console.log("Sending medicine:", payload)
 
     const res = await fetch(`${API}/api/medicine/distribute`,{
 
@@ -644,25 +653,7 @@ Newborn
 
     </div>
 
-    {/* Pregnancy Tracker Button */}
-    {/* {pregnancyExists && (
-      <button
-        onClick={() => navigate(`/pregnancy/${id}`)}
-        className="w-full mt-3 bg-pink-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-pink-600 transition-all"
-      >
-        Pregnancy Tracker
-      </button>
-    )} */}
-
-    {/* Newborn Tracker Button */}
-    {/* {newbornExists && (
-      <button
-        onClick={() => navigate(`/newborn/${id}`)}
-        className="w-full mt-3 bg-blue-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 transition-all"
-      >
-        Newborn Care
-      </button>
-    )} */}
+    
 
     {/* Change pregnancyExists to patient?.isPregnant */}
 {patient?.pregnancyStatus === "pregnant" && (
@@ -703,19 +694,21 @@ Newborn
         {vaccines?.length || 0}
       </span>
     </div>
-    <div className={`text-slate-400 transition-transform duration-300 ${isVacExpanded ? 'rotate-180' : ''}`}>
-      <ChevronDown size={20} className={isVacExpanded ? 'rotate-90' : ''} />
+    <div className={`text-black transition-transform duration-300 ${isVacExpanded ? 'rotate-180' : ''}`}>
+      <ChevronDown size={20} className={isVacExpanded ? 'rotate-180' : ''} />
     </div>
   </button>
 
   <AnimatePresence>
-    {isVacExpanded && (
-      <motion.div 
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: "auto", opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        className="overflow-hidden"
-      >
+  {isVacExpanded && (
+
+  <motion.div
+    initial={{ height: 0, opacity: 0 }}
+    animate={{ height: "auto", opacity: 1 }}
+    exit={{ height: 0, opacity: 0 }}
+    transition={{ duration: 0.25 }}
+    className="overflow-hidden pt-3 border-t border-slate-50"
+  >
         <div className="space-y-3 pt-4 border-t border-slate-50">
           {vaccines?.length > 0 ? (
             vaccines.map((v) => {
@@ -805,102 +798,138 @@ Complete
 
 <div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
 
-  <div className="flex justify-between items-center mb-4">
+  {/* HEADER */}
+  <button
+    onClick={() => setIsMedExpanded(!isMedExpanded)}
+    className="w-full flex items-center justify-between mb-2"
+  >
 
-    <h3 className="font-bold text-slate-800">
-      Medicines Given
-    </h3>
+    <div className="flex items-center gap-2">
+      <Activity className="text-blue-500" size={20} />
+      <h3 className="font-bold text-slate-800">Medicine Tracker</h3>
+
+      <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
+        {medicines.length}
+      </span>
+    </div>
+
+    <ChevronDown
+      size={20}
+      className={`transition-transform ${isMedExpanded ? "rotate-180" : ""}`}
+    />
+
+  </button>
+
+
+  <AnimatePresence>
+  {isMedExpanded && (
+
+  <motion.div
+    initial={{ height: 0, opacity: 0 }}
+    animate={{ height: "auto", opacity: 1 }}
+    exit={{ height: 0, opacity: 0 }}
+    transition={{ duration: 0.25 }}
+    className="overflow-hidden pt-3 border-t border-slate-50"
+  >
+
+    {/* GIVE MEDICINE BUTTON */}
 
     <button
       onClick={()=>setShowMedicineForm(!showMedicineForm)}
-      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg"
+      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg mb-3"
     >
       + Give Medicine
     </button>
 
-  </div>
 
+    {/* FORM */}
 
-  {showMedicineForm && (
+    {showMedicineForm && (
 
-    <div className="space-y-3 mb-4">
+      <div className="space-y-3 mb-4">
 
-      <select
-        value={medicineData.medicineId}
-        onChange={(e)=>setMedicineData({...medicineData,medicineId:e.target.value})}
-        className="w-full border rounded-lg p-2 text-sm"
-      >
+        <select
+          value={medicineData.medicineId}
+          onChange={(e)=>setMedicineData({...medicineData,medicineId:e.target.value})}
+          className="w-full border rounded-lg p-2 text-sm"
+        >
 
-        <option value="">Select Medicine</option>
+          <option value="">Select Medicine</option>
 
-        {medicineList.map(m => (
-          <option key={m._id} value={m._id}>
-            {m.name}
-          </option>
-        ))}
+          {medicineList.map(m => (
+            <option key={m._id} value={m._id}>
+              {m.name}
+            </option>
+          ))}
 
-      </select>
+        </select>
 
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={medicineData.quantity}
+          onChange={(e)=>setMedicineData({...medicineData,quantity:e.target.value})}
+          className="w-full border rounded-lg p-2 text-sm"
+        />
 
-      <input
-        type="number"
-        placeholder="Quantity"
-        value={medicineData.quantity}
-        onChange={(e)=>setMedicineData({...medicineData,quantity:e.target.value})}
-        className="w-full border rounded-lg p-2 text-sm"
-      />
-
-
-      <button
-        onClick={giveMedicine}
-        className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs"
-      >
-        Save
-      </button>
-
-    </div>
-
-  )}
-
-
-  <div className="space-y-2">
-
-    {medicines.length === 0 && (
-      <p className="text-sm text-gray-400">
-        No medicines given yet
-      </p>
-    )}
-
-    {medicines.map(m => (
-
-      <div
-        key={m._id}
-        className="flex justify-between items-center border p-2 rounded-lg"
-      >
-
-        <div>
-
-          <p className="font-semibold text-sm">
-            {m.medicineId?.name}
-          </p>
-
-          <p className="text-xs text-gray-400">
-            {new Date(m.givenDate).toLocaleDateString()}
-          </p>
-
-        </div>
-
-        <span className="text-sm font-bold">
-          {m.quantity}
-        </span>
+        <button
+          onClick={giveMedicine}
+          className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs"
+        >
+          Save
+        </button>
 
       </div>
 
-    ))}
+    )}
 
-  </div>
+
+    {/* HISTORY */}
+
+    <div className="space-y-2">
+
+      {medicines.length === 0 && (
+        <p className="text-sm text-gray-400">
+          No medicines given yet
+        </p>
+      )}
+
+      {medicines.map(m => (
+
+        <div
+          key={m._id}
+          className="flex justify-between items-center border p-2 rounded-lg"
+        >
+
+          <div>
+
+            <p className="font-semibold text-sm">
+              {m.medicineId?.name}
+            </p>
+
+            <p className="text-xs text-gray-400">
+              {new Date(m.givenDate).toLocaleDateString()}
+            </p>
+
+          </div>
+
+          <span className="text-sm font-bold">
+            {m.quantity}
+          </span>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </motion.div>
+
+  )}
+  </AnimatePresence>
 
 </div>
+
           </div>
 
           {/* RIGHT COLUMN: VITALS & CHART */}
@@ -1004,7 +1033,11 @@ Complete
           </div>
           <div className="flex gap-8">
             <div className="w-40 h-40 bg-slate-100 rounded-3xl flex items-center justify-center border-4 border-slate-50">
-              <QRCodeCanvas value={`http://localhost:5173/health-card/${patient?._id}`} size={140} />
+             <QRCodeCanvas 
+            value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
+            size={140}
+          />
+
             </div>
             <div className="flex-1 space-y-2 py-2">
               <p className="text-xl font-black text-slate-800">{patient?.name}</p>
