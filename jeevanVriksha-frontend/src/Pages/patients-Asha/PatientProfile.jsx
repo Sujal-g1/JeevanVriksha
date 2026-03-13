@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { 
@@ -360,14 +361,81 @@ useEffect(() => {
 
 
 // ----- health card
-  const downloadCard = async () => {
-    const card = document.getElementById("healthCard");
-    const canvas = await html2canvas(card, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF();
-    pdf.addImage(imgData, "PNG", 15, 15, 180, 105);
-    pdf.save(`${patient?.name}_HealthCard.pdf`);
-  };
+// const downloadCard = async () => {
+
+//   const element = document.getElementById("healthCard");
+
+//   if (!element) {
+//     alert("Health card not ready");
+//     return;
+//   }
+
+//   const canvas = await html2canvas(element, {
+//     scale: 3,
+//     useCORS: true
+//   });
+
+//   const imgData = canvas.toDataURL("image/png");
+
+//   const pdf = new jsPDF("landscape", "mm", "a4");
+
+//   const width = 260;
+//   const height = (canvas.height * width) / canvas.width;
+
+//   pdf.addImage(imgData, "PNG", 10, 20, width, height);
+
+//   pdf.save(`${patient?.name || "patient"}_HealthCard.pdf`);
+// };
+
+const downloadCard = async () => {
+
+  const original = document.getElementById("healthCard");
+
+  if (!original) {
+    alert("Health card not ready");
+    return;
+  }
+
+  // Clone the card so we can sanitize styles
+  const clone = original.cloneNode(true);
+
+  // Reset problematic styles
+  clone.style.background = "#ffffff";
+  clone.style.color = "#000000";
+
+  // Remove Tailwind classes that may contain oklch colors
+  clone.querySelectorAll("*").forEach(el => {
+    el.style.background = "#ffffff";
+    el.style.color = "#000000";
+    el.style.borderColor = "#e5e7eb";
+  });
+
+  // Put clone temporarily into DOM
+  clone.style.position = "fixed";
+  clone.style.top = "-10000px";
+  document.body.appendChild(clone);
+
+  const canvas = await html2canvas(clone, {
+    scale: 3,
+    backgroundColor: "#ffffff"
+  });
+
+  document.body.removeChild(clone);
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("landscape","mm","a4");
+
+  const width = 260;
+  const height = (canvas.height * width) / canvas.width;
+
+  pdf.addImage(imgData,"PNG",10,20,width,height);
+
+  pdf.save(`${patient?.name || "patient"}_HealthCard.pdf`);
+};
+
+
+
 
   const handleAddVital = async (e) => {
     e.preventDefault();
@@ -1022,33 +1090,137 @@ Complete
       </main>
 
       {/* HIDDEN HEALTH CARD FOR DOWNLOAD */}
-      <div className="fixed -left-[2000px]">
-        <div id="healthCard" className="w-[600px] p-8 bg-white border-[12px] border-blue-600 rounded-[3rem]">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <h2 className="text-3xl font-black text-blue-700 leading-none">JeevanVriksha</h2>
-              <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">Digital Health Passport</p>
-            </div>
-            <div className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold">MARCH 2026</div>
-          </div>
-          <div className="flex gap-8">
-            <div className="w-40 h-40 bg-slate-100 rounded-3xl flex items-center justify-center border-4 border-slate-50">
-             <QRCodeCanvas 
-            value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
-            size={140}
-          />
+                    <div className="fixed top-0 left-0 opacity-0 pointer-events-none">
 
-            </div>
-            <div className="flex-1 space-y-2 py-2">
-              <p className="text-xl font-black text-slate-800">{patient?.name}</p>
-              <p className="text-md text-slate-600"><b>Village:</b> {patient?.village}</p>
-              <p className="text-md text-slate-600"><b>Age:</b> {patient?.age} Years</p>
-              <p className="text-md text-slate-600"><b>Blood:</b> {patient?.bloodGroup}</p>
-              <p className="text-xs text-blue-500 font-bold mt-4 uppercase tracking-tighter">Scan to access full history</p>
-            </div>
-          </div>
-        </div>
-      </div>
+<div
+id="healthCard"
+style={{
+width:"650px",
+height:"360px",
+background:"#ffffff",
+borderRadius:"20px",
+border:"1px solid #e5e7eb",
+display:"flex",
+flexDirection:"column",
+overflow:"hidden",
+fontFamily:"sans-serif"
+}}
+>
+
+{/* HEADER */}
+<div style={{
+background:"#1e40af",
+color:"#fff",
+padding:"10px 16px",
+display:"flex",
+justifyContent:"space-between",
+alignItems:"center"
+}}>
+<div style={{fontWeight:"bold"}}>
+JeevanVriksha Health ID
+</div>
+
+<div style={{fontSize:"12px"}}>
+ID: {id.slice(-6)}
+</div>
+</div>
+
+
+{/* BODY */}
+<div style={{
+flex:1,
+display:"flex",
+alignItems:"center",
+padding:"20px",
+gap:"25px"
+}}>
+
+{/* AVATAR */}
+<div style={{
+width:"100px",
+height:"100px",
+background:"#e5e7eb",
+borderRadius:"12px",
+display:"flex",
+alignItems:"center",
+justifyContent:"center"
+}}>
+<User size={45} color="#374151"/>
+</div>
+
+
+{/* DETAILS */}
+<div style={{flex:1,lineHeight:"24px"}}>
+
+<div style={{fontSize:"18px",fontWeight:"bold"}}>
+{patient?.name}
+</div>
+
+<div>Village: {patient?.village}</div>
+<div>Age: {patient?.age}</div>
+<div>Blood Group: {patient?.bloodGroup}</div>
+
+<div style={{
+marginTop:"10px",
+fontSize:"12px",
+color:"#6b7280"
+}}>
+Scan QR to access digital health record
+</div>
+
+</div>
+
+
+{/* QR */}
+<div style={{
+display:"flex",
+flexDirection:"column",
+alignItems:"center"
+}}>
+
+<div style={{
+background:"#fff",
+padding:"10px",
+border:"2px solid #e5e7eb",
+borderRadius:"12px"
+}}>
+
+<QRCodeSVG
+value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
+size={140}
+/>
+
+</div>
+
+<div style={{
+marginTop:"6px",
+fontSize:"11px",
+color:"#6b7280"
+}}>
+Secure Medical QR
+</div>
+
+</div>
+
+</div>
+
+
+{/* FOOTER */}
+<div style={{
+background:"#f3f4f6",
+fontSize:"11px",
+padding:"6px",
+textAlign:"center"
+}}>
+JeevanVriksha Rural Healthcare System
+</div>
+
+</div>
+
+
+</div>
+
+
 
       {/* MODAL QR OVERLAY - SCROLL-PROOF PORTAL */}
 <AnimatePresence>
@@ -1084,17 +1256,21 @@ Complete
           </div>
 
           {/* QR CODE CONTAINER */}
-          <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-5 mb-6 flex items-center justify-center">
-            <div className="w-full aspect-square max-w-[200px]">
-              <QRCodeCanvas 
-                value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
-                style={{ width: '100%', height: '100%' }}
-                size={512}
-                level={"H"}
-                includeMargin={false}
-              />
-            </div>
-          </div>
+         <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-6 mb-6 flex justify-center items-center">
+
+  <div className="flex justify-center items-center">
+
+    <QRCodeCanvas
+      value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
+      size={160}
+      level="H"
+      includeMargin={true}
+    />
+
+  </div>
+
+</div>
+
 
           <div className="space-y-4">
             <div className="text-center">
