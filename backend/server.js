@@ -39,7 +39,7 @@ connectDB();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://jeevanvriksha.vercel.app/"
+    "https://jeevanvriksha.vercel.app"
   ],
   credentials: true
 }));
