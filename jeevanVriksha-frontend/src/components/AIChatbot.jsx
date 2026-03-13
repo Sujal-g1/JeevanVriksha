@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const API = import.meta.env.VITE_API_URL;
+
 
 
 const AIChatbot = ({ close }) => {
@@ -96,7 +98,7 @@ const AIChatbot = ({ close }) => {
     try {
 
       const response = await fetch(
-        "http://localhost:5001/api/ai/chat",
+        `${API}/api/ai/chat`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

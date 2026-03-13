@@ -113,7 +113,7 @@ const SignupPatient = () => {
 
     try{
 
-      const res = await fetch(`${API}X X/api/auth/signup`,{
+      const res = await fetch(`${API}/api/auth/signup`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json"

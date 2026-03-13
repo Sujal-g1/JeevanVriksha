@@ -73,7 +73,7 @@ const handleSubmit = async (e) => {
     try {
 
       const res = await fetch(
-        "http://localhost:5001/api/patientAsha/create",
+       `${API}api/patientAsha/create`,
         {
           method: "POST",
           headers: {
