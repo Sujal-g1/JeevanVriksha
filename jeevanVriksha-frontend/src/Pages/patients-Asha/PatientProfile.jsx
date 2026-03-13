@@ -1087,7 +1087,7 @@ Complete
           <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-5 mb-6 flex items-center justify-center">
             <div className="w-full aspect-square max-w-[200px]">
               <QRCodeCanvas 
-                value={`http://localhost:5173/health-card/${patient._id}`} 
+                value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
                 style={{ width: '100%', height: '100%' }}
                 size={512}
                 level={"H"}
