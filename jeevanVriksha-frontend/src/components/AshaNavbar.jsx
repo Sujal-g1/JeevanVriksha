@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sliders, MapPin, Maximize, Minimize } from "lucide-react";
+import { Sliders, MapPin, Maximize, Minimize , Camera  } from "lucide-react";
 import Logo from "../assets/logo.png";
 import AIChatbot from "./AIChatbot"
 // import { FaMicrophone } from "react-icons/fa";
@@ -100,6 +100,18 @@ const AshaNavbar = () => {
       <FaBrain />
       </button>
     {showBot && <AIChatbot close={()=>setShowBot(false)} />}
+
+      <button
+    onClick={() =>
+      window.open(
+        "https://skin-disease-ai-f-git-main-chirag6.vercel.app/",
+        "_blank"
+      )
+    }
+    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-blue-50 px-3 py-1.5 rounded-full text-sm font-bold transition-all border border-white/10"
+  >
+    <Camera size={16} />
+  </button>
       {/* ------------- */}
 
 

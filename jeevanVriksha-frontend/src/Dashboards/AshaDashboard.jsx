@@ -8,6 +8,7 @@ import AlertPanel from "../components/AlertPanel";
 import AshaNavbar from "../components/AshaNavbar";
 import ActivityFeed from "../components/ActivityFeed";
 import TodoPage from "../Pages/TodoPage"
+import { useTranslation } from 'react-i18next';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -25,6 +26,10 @@ const AshaDashboard = () => {
   const [activity, setActivity] = useState([]);
   const [alerts,setAlerts] = useState([]);
   const [isMedicineExpanded, setIsMedicineExpanded] = useState(false);
+
+  // language
+  const { t, i18n } = useTranslation();
+const [showLangOptions, setShowLangOptions] = useState(false);
 
   // ----- tasks
   const [tasks, setTasks] = useState([]);
@@ -200,7 +205,7 @@ setStats({
         {/* HEADER WITH SLOW-INTERNET INDICATOR */}
         <div className="mb-6 flex justify-between items-end">
           <div>
-            <h1 className="text-2xl font-black text-white">Daily <span className="text-pink-400">Overview</span></h1>
+            <h1 className="text-2xl font-black text-white"> {t("Daily")} <span className="text-pink-400">Overview</span></h1>
             <p className="text-blue-200 text-xs font-medium">Real-time health tracking</p>
           </div>
           {loading && (
