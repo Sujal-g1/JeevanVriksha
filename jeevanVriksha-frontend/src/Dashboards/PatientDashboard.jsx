@@ -58,10 +58,15 @@ return (
     <div className="fixed inset-0 bg-gradient-to-br from-[#dcfce7] via-white to-white pointer-events-none" />
     
     <PatientNavbar patientName={patient?.name} />
-
+  
     {/* Added 'overflow-hidden' and 'px-4' to prevent horizontal scroll on mobile */}
     <main className="relative pt-24 px-4 sm:px-6 max-w-7xl mx-auto overflow-hidden">
-      
+      <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-2 text-green-900  text-xs font-bold mb-6 uppercase tracking-widest hover:text-white transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to dashboard
+        </button>
       {/* Live Monitor Header */}
       <div className="flex items-center justify-center sm:justify-end mb-6">
         <div className="bg-white/60 backdrop-blur-sm border border-green-200 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm">

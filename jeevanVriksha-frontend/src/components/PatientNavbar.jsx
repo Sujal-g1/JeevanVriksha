@@ -28,6 +28,7 @@ const PatientNavbar = ({ patientName }) => {
     { name: "Dashboard", icon: <Home size={20}/>, path: "/dashboard" },
     { name: "Patient List", icon: <Users size={20}/>, path: "/patients" },
     { name: "ASHA Help Guide", icon: <BookOpen size={20}/>, path: "/asha-module" },
+    { name: "Skin Sensor", icon: <Camera size={20}/>, path: "/skin-sensor" }
   ];
 
   const handleLogout = () => {
@@ -62,11 +63,18 @@ const PatientNavbar = ({ patientName }) => {
         </div>
 
         <div className="flex items-center gap-2">
+         <button
+  onClick={() => window.open("https://skin-disease-ai-f-git-main-chirag6.vercel.app/", "_blank")}
+  className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-xl text-[10px] font-black shadow-md shadow-blue-100 active:scale-95 transition-all"
+>
+  <Camera size={18}/>
+  <span className="hidden md:inline uppercase">Skin Sensor</span>
+</button> 
           <button
             onClick={() => setShowBot(true)}
             className="flex items-center gap-2 bg-[#00a859] text-white px-3 py-2 rounded-xl text-[10px] font-black shadow-md shadow-green-100 active:scale-95 transition-all"
           >
-            <FaBrain />
+            <FaBrain size={18}/>
             <span className="hidden md:inline uppercase">AI Assistant</span>
           </button>
 
