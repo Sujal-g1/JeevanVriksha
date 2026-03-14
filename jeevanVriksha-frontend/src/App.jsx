@@ -25,7 +25,7 @@ import NewbornDashboard from "./Pages/newborn/NewbornDashboard"
 import CreatePatient from "./Pages/CreatePatient"
 import Alerts from "./Pages/Alerts"
 import TodoPage from "./Pages/TodoPage"
-
+import AshaModule from "./components/patientDashboardData/AshaModule";
 
 // ---- offline sync 
 import { syncVitals } from "./services/vitalsService";
@@ -171,6 +171,7 @@ useEffect(() => {
         <Route path="/alerts" element={<Alerts/>}/>
 
         <Route path="/todo" element={<TodoPage />} />
+        <Route path="/asha-module" element={<AshaModule />} />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
