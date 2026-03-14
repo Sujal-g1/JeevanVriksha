@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, UserPlus, Bell, Baby, Syringe, Activity, Target, Loader2 } from "lucide-react";
+import { Users, UserPlus, Bell, Baby, Syringe, Activity, Target, Loader2 ,ChevronDown} from "lucide-react";
 
 import StatsCard from "../components/StatsCard";
 import AlertPanel from "../components/AlertPanel";
@@ -23,7 +23,8 @@ const AshaDashboard = () => {
   visitsToday: 0
 });
   const [activity, setActivity] = useState([]);
-  const [alerts,setAlerts] = useState([])
+  const [alerts,setAlerts] = useState([]);
+  const [isMedicineExpanded, setIsMedicineExpanded] = useState(false);
 
   // ----- tasks
   const [tasks, setTasks] = useState([]);
@@ -33,6 +34,9 @@ const AshaDashboard = () => {
   // todo
 const [showTodo,setShowTodo] = useState(false)
 const [todoText,setTodoText] = useState("")
+
+//medicine
+const [medicineStock, setMedicineStock] = useState([])
 
   // reminder
   const sendReminder = async (task) => {
@@ -76,6 +80,30 @@ const fetchTasks = async () => {
   }
 };
 
+// medicine fetch
+const fetchMedicineStock = async () => {
+
+  try {
+
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    const res = await fetch(`${API}/api/medicine/my-stock`,{
+      headers:{
+        Authorization:`Bearer ${user.token}`
+      }
+    })
+
+    const data = await res.json()
+console.log("Medicine API response:", data)
+    setMedicineStock(data)
+
+  } catch(err){
+
+    console.log("Medicine stock error",err)
+
+  }
+
+}
 
 // task completion or reminder comp.
 const markComplete = async (taskId) => {
@@ -132,8 +160,8 @@ const markComplete = async (taskId) => {
   fetch(`${API}/api/tasks/today`,{
     headers:{ Authorization:`Bearer ${user.token}` }
   })
-  
 ])
+await fetchMedicineStock()
         
         clearTimeout(timeoutId);
        const data = await sRes.json();
@@ -209,6 +237,66 @@ setStats({
         <StatsCard label="Vaccination Due" value={stats.vaccineDue} icon={<Syringe size={16}/>} />    
         <StatsCard label="Visits Today" value={stats.visitsToday} icon={<Activity size={16}/>} />
       </div>
+
+      {/* MEDICINE STOCK DROPDOWN */}
+<div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6 transition-all duration-300">
+  
+  {/* Trigger Header */}
+  <button 
+    onClick={() => setIsMedicineExpanded(!isMedicineExpanded)}
+    className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+  >
+    <div className="flex items-center gap-2">
+      <Activity size={18} className="text-blue-600"/>
+      <h3 className="font-bold text-lg text-gray-800">
+        Medicine Stock
+      </h3>
+    </div>
+    
+    <div className={`transition-transform duration-300 ${isMedicineExpanded ? 'rotate-180' : ''}`}>
+      <ChevronDown size={20} className="text-gray-400" />
+    </div>
+  </button>
+
+  {/* Expandable Content */}
+  <div 
+    className={`px-6 transition-all duration-300 ease-in-out overflow-hidden ${
+      isMedicineExpanded ? 'max-h-[1000px] pb-6 opacity-100' : 'max-h-0 opacity-0'
+    }`}
+  >
+    <div className="space-y-3 pt-2">
+      {medicineStock.length === 0 ? (
+        <p className="text-gray-400 text-sm italic">
+          No medicines available
+        </p>
+      ) : (
+        medicineStock.map(stock => (
+          <div
+            key={stock._id}
+            // Logic to close dropdown when a specific item is clicked, if desired:
+            // onClick={() => setIsMedicineExpanded(false)}
+            className="flex justify-between items-center border border-gray-100 p-3 rounded-xl hover:border-blue-100 hover:bg-blue-50/30 transition-all"
+          >
+            <div>
+              <p className="font-semibold text-sm text-gray-700">
+                {stock.medicineId?.name}
+              </p>
+              <p className="text-xs text-gray-400">
+                {stock.medicineId?.dosage}
+              </p>
+            </div>
+
+            <div className="text-right">
+              <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                {stock.quantity}
+              </span>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+</div>
 
 
       {/* TASKS SECTION */}
@@ -480,7 +568,7 @@ Confirm
                   </div>
 
                     <div className="text-[11px] font-medium text-emerald-100 mb-5 mt-2">
-               Lorem ipsum dolor sit amet.
+             ..
               </div>
                 </div>
                 <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold py-2.5 rounded-xl text-xs transition-all border border-white/20">

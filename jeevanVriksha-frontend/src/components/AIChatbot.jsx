@@ -10,6 +10,7 @@ import {
   Volume2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Logo from "../assets/logo.png";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -211,13 +212,14 @@ const AIChatbot = ({ close }) => {
 
           <div className="flex items-center gap-3">
 
-            <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg">
+            {/* <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg">
               <Sparkles className="text-white" size={20} />
-            </div>
+            </div> */}
+             <img src={Logo} alt="logo" className="h-15 w-15 object-contain rounded-lg p-0.5" />
 
             <div>
               <h2 className="text-lg font-bold text-slate-800">
-                Sujal ji ki kripa
+                SEVA-AI
               </h2>
 
               <div className="flex items-center gap-1.5">
@@ -225,7 +227,7 @@ const AIChatbot = ({ close }) => {
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
 
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                 ...
+                 
                 </span>
 
               </div>

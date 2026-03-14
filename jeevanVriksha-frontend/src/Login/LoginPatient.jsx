@@ -90,6 +90,7 @@ const handleLogin = async (e) => {
 const decoded = jwtDecode(data.token);
 
 const userData = {
+  id: decoded.id || decoded._id,
   role: decoded.role,
   token: data.token
 };
@@ -98,7 +99,7 @@ localStorage.setItem("user", JSON.stringify(userData));
 setUser(userData);
 
       // redirect
-      navigate("/patient-dashboard");
+      navigate(`/patient-dashboard/${userData.id}`);
 
     } else {
       alert(data.message || data.msg || "Login failed");

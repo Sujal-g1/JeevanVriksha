@@ -1,181 +1,171 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
+import AshaNavbar from "../components/AshaNavbar";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 
-import PatientSidebar from "../components/patientDashboardData/PatientSidebar";
-import OverviewCard from "../components/patientDashboardData/OverviewCard";
-import HealthSummary from "../components/patientDashboardData/HealthSummary";
-import VaccinationPanel from "../components/patientDashboardData/VaccinationPanel";
-import MedicalTimeline from "../components/patientDashboardData/MedicalTimeline";
-import HealthChart from "../components/patientDashboardData/HealthChart";
-import AlertsPanel from "../components/patientDashboardData/AlertsPanel";
-
-import { Menu, Loader2 } from "lucide-react";
+import PatientVitalsChart from "../components/patientDashboardData/PatientVitalsChart";
+import PatientOverviewCard from "../components/patientDashboardData/PatientOverviewCard";
+import PatientVaccines from "../components/patientDashboardData/PatientVaccines";
+import PatientMedicines from "../components/patientDashboardData/PatientMedicines";
 
 const API = import.meta.env.VITE_API_URL;
 
 const PatientDashboard = () => {
 
-  const [profile, setProfile] = useState({});
-  const [vitals, setVitals] = useState({});
-  const [vaccines, setVaccines] = useState([]);
-  const [timeline, setTimeline] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const { id } = useParams();
+const navigate = useNavigate();
 
-  useEffect(() => {
+const [patient,setPatient] = useState(null);
+const [vitals,setVitals] = useState([]);
+const [vaccines,setVaccines] = useState([]);
+const [medicines,setMedicines] = useState([]);
+const [loading,setLoading] = useState(true);
 
-    const fetchDashboard = async () => {
+useEffect(()=>{
 
-      try {
+const loadData = async () => {
 
-        const user = JSON.parse(localStorage.getItem("user"));
-        console.log("USER:",user);
-        if(!user) return;
+try{
 
-        const res = await axios.get(
-          `${API}/api/patient/dashboard-data`,
-          {
-            headers:{
-              Authorization:`Bearer ${user.token}`
-            }
-          }
-        );
+const user = JSON.parse(localStorage.getItem("user"));
 
-        const data = res.data;
+if(!user) return;
 
-        setProfile(data.profile || {});
-        setVitals(data.vitals || {});
-        setVaccines(data.vaccinations || []);
+const headers = {
+Authorization:`Bearer ${user.token}`
+};
 
-        const events = [];
+const res = await fetch(`${API}/api/patients/dashboard`,{ headers });
 
-        if(data.vitals){
-          events.push({
-            type:"vital",
-            label:`Vitals recorded (BP ${data.vitals.bloodPressure})`,
-            date:data.vitals.createdAt
-          });
-        }
+const data = await res.json();
 
-        data.vaccinations?.forEach(v=>{
-          events.push({
-            type:"vaccine",
-            label:`Vaccine: ${v.vaccineName}`,
-            date:v.dueDate
-          })
-        });
+console.log("Dashboard API:",data);
 
-        setTimeline(
-          events.sort((a,b)=> new Date(b.date) - new Date(a.date))
-        );
+/* PATIENT PROFILE */
+setPatient(data.profile || {});
 
-      } catch(err){
-        console.error("Dashboard fetch error:",err);
-      } finally{
-        setLoading(false);
-      }
+/* VITALS */
+setVitals(Array.isArray(data.vitals) ? data.vitals : []);
 
-    };
+/* VACCINES */
+setVaccines(Array.isArray(data.vaccinations) ? data.vaccinations : []);
 
-    fetchDashboard();
+/* MEDICINES (if backend sends it) */
+setMedicines(Array.isArray(data.medicines) ? data.medicines : []);
 
-  },[]);
+}catch(err){
 
+console.error("Dashboard fetch error:",err);
 
-  return (
+}finally{
 
-    <div className="flex min-h-screen bg-slate-50">
+setLoading(false);
 
-      {/* SIDEBAR */}
+}
 
-      <div className={`fixed lg:relative z-40 ${sidebarOpen ? "block" : "hidden"} lg:block`}>
-        <PatientSidebar/>
-      </div>
+};
 
-      {/* OVERLAY MOBILE */}
+loadData();
 
-      {sidebarOpen && (
-        <div
-          onClick={()=>setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/30 lg:hidden"
-        />
-      )}
+},[id]);
 
-      {/* MAIN AREA */}
+if(loading){
+return(
+<div className="min-h-screen flex items-center justify-center text-white bg-[#064a8f]">
+Loading dashboard...
+</div>
+)
+}
 
-      <div className="flex-1 flex flex-col">
+if(!patient){
+return(
+<div className="min-h-screen flex items-center justify-center text-white bg-[#064a8f]">
+No patient data
+</div>
+)
+}
 
-        {/* HEADER */}
+return(
 
-        <header className="bg-white border-b px-6 py-4 flex justify-between items-center">
+<div className="min-h-screen bg-[#064a8f] bg-gradient-to-b from-[#064a8f] to-[#1259a1] pb-20">
 
-          <div className="flex items-center gap-3">
+<AshaNavbar/>
 
-            <button
-              className="lg:hidden"
-              onClick={()=>setSidebarOpen(!sidebarOpen)}
-            >
-              <Menu/>
-            </button>
+<main className="pt-24 px-4 max-w-7xl mx-auto">
 
-            <h1 className="text-xl font-bold">
-              Health Dashboard
-            </h1>
+<button
+onClick={()=>navigate(-1)}
+className="flex items-center gap-2 text-blue-200 text-xs font-black mb-6 uppercase"
+>
+<ArrowLeft size={16}/> Back
+</button>
 
-          </div>
+<div className="grid lg:grid-cols-12 gap-6">
 
-          {loading && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <Loader2 size={16} className="animate-spin"/>
-              Syncing...
-            </div>
-          )}
+{/* LEFT SIDE */}
 
-        </header>
+<div className="lg:col-span-4 space-y-6">
 
-        {/* CONTENT */}
+<PatientOverviewCard patient={patient}/>
 
-        <div className="p-6 space-y-6">
+<div className="bg-white rounded-3xl p-6 shadow-xl">
 
-          {/* PROFILE */}
+<h3 className="flex items-center gap-2 font-bold mb-4">
+<AlertTriangle size={18}/> Health Alerts
+</h3>
 
-          <OverviewCard profile={profile}/>
+{vitals.length > 0 ? (
 
-          {/* HEALTH STATS */}
+<div className="space-y-2 text-sm">
 
-          <HealthSummary vitals={vitals}/>
+{vitals.some(v => Number(v.glucose) > 140) && (
+<p className="text-red-500 font-semibold">
+High Glucose detected
+</p>
+)}
 
-          {/* GRID SECTION */}
+{vitals.some(v => Number(v.weight) > 90) && (
+<p className="text-orange-500 font-semibold">
+Weight above recommended range
+</p>
+)}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+</div>
 
-            {/* CHART */}
+):(
 
-            <div className="lg:col-span-2">
-              <HealthChart vitals={vitals}/>
-            </div>
+<p className="text-gray-400 text-sm">
+No alerts available
+</p>
 
-            {/* ALERTS */}
+)}
 
-            <AlertsPanel vaccines={vaccines}/>
+</div>
 
-          </div>
+</div>
 
-          {/* VACCINATION */}
+{/* RIGHT SIDE */}
 
-          <VaccinationPanel vaccines={vaccines}/>
+<div className="lg:col-span-8 space-y-6">
 
-          {/* MEDICAL TIMELINE */}
+{/* CHART */}
+<PatientVitalsChart vitals={vitals}/>
 
-          <MedicalTimeline events={timeline}/>
+{/* VACCINES */}
+<PatientVaccines vaccines={vaccines}/>
 
-        </div>
+{/* MEDICINES */}
+<PatientMedicines medicines={medicines}/>
 
-      </div>
+</div>
 
-    </div>
+</div>
 
-  );
+</main>
+
+</div>
+
+);
 
 };
 

@@ -129,14 +129,14 @@ useEffect(() => {
         <Route path="/signup-patient" element={<SignupPatient />} />
 
         {/* Patient Dashboard */}
-        <Route
-          path="/patient-dashboard"
-          element={
-            <ProtectedRoute user={user} role="patient">
-              <PatientDashboard />
-            </ProtectedRoute>
-          }
-        />
+       <Route
+  path="/patient-dashboard/:id"
+  element={
+    <ProtectedRoute user={user} role="patient">
+      <PatientDashboard />
+    </ProtectedRoute>
+  }
+/>
 
         {/* ASHA Dashboard */}
         <Route
@@ -157,7 +157,7 @@ useEffect(() => {
             </ProtectedRoute>
           }
         />
-
+      {/* <Route path="/patient/dashboard/:id" element={<PatientDashboard/>}/> */}
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/:id" element={<PatientProfile />} />
 
