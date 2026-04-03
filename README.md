@@ -43,7 +43,9 @@ The project is actively evolving and more features will be added as development 
 
 ## 🔗 Live Demo
 
-jeevanvriksha.vercel.app
+## 🔗 Live Demo
+
+[Visit JeevanVriksha](https://jeevanvriksha.vercel.app)
 
 
 ---
@@ -52,10 +54,9 @@ jeevanvriksha.vercel.app
 
 Since the ASHA dashboard is mostly complete, demo credentials will be shared here so users can **experience the dashboard functionality directly**.
 
-select staff login for Asha dashboard
-ASHA ID -> ASHA2003
-PAss    -> test123
-
+**Login Type:** Staff Login  
+**ASHA ID:** `ASHA2003`  
+**Password:** `test123`
 ---
 
 ## 🧠 Design Philosophy
