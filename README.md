@@ -43,8 +43,6 @@ The project is actively evolving and more features will be added as development 
 
 ## 🔗 Live Demo
 
-## 🔗 Live Demo
-
 [Visit JeevanVriksha](https://jeevanvriksha.vercel.app)
 
 
