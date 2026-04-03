@@ -43,9 +43,8 @@ The project is actively evolving and more features will be added as development 
 
 ## 🔗 Live Demo
 
-> 🚧 Will be added soon
+jeevanvriksha.vercel.app
 
-(Once deployed, link will be updated here)
 
 ---
 
@@ -53,7 +52,9 @@ The project is actively evolving and more features will be added as development 
 
 Since the ASHA dashboard is mostly complete, demo credentials will be shared here so users can **experience the dashboard functionality directly**.
 
-> Credentials will be updated soon
+select staff login for Asha dashboard
+ASHA ID -> ASHA2003
+PAss    -> test123
 
 ---
 
@@ -76,15 +77,7 @@ Creating a UI that ASHA workers can easily understand required multiple iteratio
 
 Deciding how to store and organize patient data in a scalable and meaningful way was challenging.
 
-### 3. Multi-language Handling
-
-Implementing multi-language support while maintaining UI consistency was complex.
-
-### 4. Voice Assistant Integration
-
-Ensuring voice interaction works smoothly and is actually helpful (not confusing) required careful design.
-
-### 5. Real-world Use Case Mapping
+### 3. Real-world Use Case Mapping
 
 Translating real healthcare processes into a digital system required deep thinking about practical workflows.
 
