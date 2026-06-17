@@ -8,6 +8,14 @@ The core idea is simple: replace scattered, manual healthcare tracking with a **
 
 ---
 
+## ## Known Issues -----------
+
+This project is currently under active development and testing. As new features are being implemented and existing functionality is being refined, users may encounter occasional bugs, incomplete features, or unexpected behavior.
+
+If you experience any issues, please report them through the Issues section of this repository.
+
+| right now, patient dashboard having some issues 
+
 ## 🎯 What This Project Does
 
 * Maintains **digital health records** for patients
