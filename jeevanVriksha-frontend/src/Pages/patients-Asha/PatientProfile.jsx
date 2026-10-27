@@ -7,7 +7,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { 
   User, MapPin, Droplets, Calendar, Activity, 
-  TrendingUp, ShieldCheck, Download, QrCode, Plus, ArrowLeft, 
+  TrendingUp, ShieldCheck, Download, QrCode, Plus, ArrowLeft, RefreshCw,
   ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
@@ -17,7 +17,6 @@ const API = import.meta.env.VITE_API_URL;
 
 // offline
 import { cachePatientProfile, getCachedPatientProfile } from "../../services/patientCacheService";
-import { distributeMedicine } from "../../services/medicineService";
 
 const PatientProfile = () => {
   const { id } = useParams();
@@ -28,6 +27,8 @@ const PatientProfile = () => {
   const [vaccines, setVaccines] = useState([]);
   const [showQR, setShowQR] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [vitalsSubmitting, setVitalsSubmitting] = useState(false);
+  const [vitalsMessage, setVitalsMessage] = useState("");
   const [formData, setFormData] = useState({
     bloodPressure: "",
     weight: "",
@@ -49,6 +50,8 @@ const PatientProfile = () => {
   pregnancyStatus: "not_pregnant"
 });
 
+const [refreshing, setRefreshing] = useState(false);
+
 const [isVacExpanded, setIsVacExpanded] = useState(false);
 const [pregnancyExists,setPregnancyExists] = useState(false)
 const [newbornExists,setNewbornExists] = useState(false)
@@ -62,107 +65,98 @@ const [medicineData, setMedicineData] = useState({
   quantity:""
 })
 const [isMedExpanded, setIsMedExpanded] = useState(false)
+const [medicineSubmitting, setMedicineSubmitting] = useState(false)
+const [medicineError, setMedicineError] = useState("")
+const [medicineSuccess, setMedicineSuccess] = useState("")
 
 // medicine fn
 
 const fetchPatientMedicines = async () => {
-
   try {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (!user?.token) throw new Error("Your session has expired. Please log in again.");
 
-    const user = JSON.parse(localStorage.getItem("user"))
-
-    const res = await fetch(`${API}/api/medicine/patient/${id}`,{
-      headers:{
-        Authorization:`Bearer ${user.token}`
-      }
-    })
-
-    const data = await res.json()
-
-    setMedicines(data)
-
-  } catch(err){
-    console.log("Medicine fetch error",err)
+    const res = await fetch(`${API}/api/medicine/patient/${id}`, {
+      headers: { Authorization: `Bearer ${user.token}` },
+    });
+    const data = await res.json().catch(() => []);
+    if (!res.ok) throw new Error(data.message || "Unable to load medicine history.");
+    setMedicines(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Medicine fetch error:", err);
+    setMedicineError(err.message || "Unable to load medicine history.");
   }
+};
 
-}
+const handleRefresh = () => {
+  if (refreshing) return;
+
+  setRefreshing(true);
+
+  setTimeout(() => {
+    window.location.reload();
+  }, 400);
+};
 
 const fetchMedicines = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (!user?.token) throw new Error("Your session has expired. Please log in again.");
 
-  try{
+    const res = await fetch(`${API}/api/medicine/all`, {
+      headers: { Authorization: `Bearer ${user.token}` },
+    });
+    const data = await res.json().catch(() => []);
+    if (!res.ok) throw new Error(data.message || "Unable to load the medicine list.");
+    setMedicineList(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Medicine list error:", err);
+    setMedicineError(err.message || "Unable to load the medicine list.");
+  }
+};
 
-    const user = JSON.parse(localStorage.getItem("user"))
+const giveMedicine = async (e) => {
+  e?.preventDefault();
+  setMedicineError("");
+  setMedicineSuccess("");
 
-    const res = await fetch(`${API}/api/medicine/all`,{
-      headers:{
-        Authorization:`Bearer ${user.token}`
-      }
-    })
-
-    const data = await res.json()
-
-    setMedicineList(data)
-
-  }catch(err){
-    console.log("Medicine list error",err)
+  const quantity = Number(medicineData.quantity);
+  if (!medicineData.medicineId) {
+    setMedicineError("Please select a medicine.");
+    return;
+  }
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    setMedicineError("Enter a whole-number quantity greater than zero.");
+    return;
   }
 
-}
+  try {
+    setMedicineSubmitting(true);
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (!user?.token) throw new Error("Your session has expired. Please log in again.");
 
-// handle submit medicine
-const giveMedicine = async () => {
-
-  try{
-
-    const user = JSON.parse(localStorage.getItem("user"))
-
-    const payload = {
-      patientId: id,
-      medicineId: medicineData.medicineId,
-      quantity: Number(medicineData.quantity)
-    }
-
-    console.log("Sending medicine:", payload)
-
-    const res = await fetch(`${API}/api/medicine/distribute`,{
-
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json",
-        Authorization:`Bearer ${user.token}`
+    const res = await fetch(`${API}/api/medicine/distribute`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.token}`,
       },
+      body: JSON.stringify({ patientId: id, medicineId: medicineData.medicineId, quantity }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Medicine could not be distributed.");
 
-      body:JSON.stringify({
-        patientId:id,
-        medicineId:medicineData.medicineId,
-        quantity:Number(medicineData.quantity)
-      })
-
-    })
-
-    if(res.ok){
-
-      alert("Medicine given successfully")
-
-      setShowMedicineForm(false)
-
-      setMedicineData({
-        medicineId:"",
-        quantity:""
-      })
-
-      fetchPatientMedicines()
-
-    }
-
-  }catch(err){
-
-    console.log(err)
-
+    setMedicineSuccess(data.message || "Medicine recorded successfully.");
+    setMedicineData({ medicineId: "", quantity: "" });
+    setShowMedicineForm(false);
+    await fetchPatientMedicines();
+  } catch (err) {
+    console.error("Give medicine error:", err);
+    setMedicineError(err.message || "Something went wrong. Please try again.");
+  } finally {
+    setMedicineSubmitting(false);
   }
-
-}
+};
 
 // Inside PatientProfile component
 const checkData = async () => {
@@ -439,23 +433,44 @@ const downloadCard = async () => {
 
   const handleAddVital = async (e) => {
     e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
-    const response = await fetch(`${API}/api/vitals/add`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${user.token}`
-  },
-  body: JSON.stringify({
-    patientId: id,
-    ...formData
-  })
-})
+    setVitalsMessage("");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (!user?.token) {
+      setVitalsMessage("Your session has expired. Please log in again.");
+      return;
+    }
 
-    if (response.ok) {
-      alert("Vitals added successfully");
-      fetch(`${API}/api/vitals/${id}`).then(res => res.json()).then(setVitals);
+    const hasValue = Object.values(formData).some((value) => String(value).trim() !== "");
+    if (!hasValue) {
+      setVitalsMessage("Enter at least one vital measurement or a note before saving.");
+      return;
+    }
+
+    try {
+      setVitalsSubmitting(true);
+      const response = await fetch(`${API}/api/vitals/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ patientId: id, ...formData }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || "Unable to save vitals. Please try again.");
+
+      const refresh = await fetch(`${API}/api/vitals/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const refreshedVitals = await refresh.json().catch(() => []);
+      if (refresh.ok) setVitals(Array.isArray(refreshedVitals) ? refreshedVitals : []);
+      setVitalsMessage("Vitals saved successfully.");
       setFormData({ bloodPressure: "", weight: "", glucose: "", heartRate: "", notes: "" });
+    } catch (error) {
+      console.error("ADD VITALS ERROR:", error);
+      setVitalsMessage(error.message || "Unable to save vitals. Check your connection and try again.");
+    } finally {
+      setVitalsSubmitting(false);
     }
   };
 
@@ -475,32 +490,52 @@ const downloadCard = async () => {
 
   if (loading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#064a8f] text-white">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-sm font-semibold text-slate-600">
       Loading patient record...
     </div>
   )
 }
 
   return (
-    <div className="min-h-screen bg-[#064a8f] bg-gradient-to-b from-[#064a8f] to-[#1259a1] pb-12">
+    <div className="min-h-screen bg-slate-50 pb-12 text-slate-800">
       <AshaNavbar />
 
-      <main className="pt-20 px-4 max-w-7xl mx-auto">
-        {/* BREADCRUMB */}
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-blue-200 text-xs font-bold mb-6 uppercase tracking-widest hover:text-white transition-colors"
-        >
-          <ArrowLeft size={14} /> Back to List
-        </button>
+      <main className="mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 lg:px-8">
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+     <div className="mb-6 flex flex-wrap items-center  gap-3">
+  <button
+    type="button"
+    onClick={() => navigate(-1)}
+    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-blue-700 hover:shadow-sm"
+  >
+    <ArrowLeft size={17} />
+    Back to Dashboard
+  </button>
+
+ <button
+  type="button"
+  onClick={handleRefresh}
+  disabled={refreshing}
+  aria-label="Refresh page"
+  title="Refresh page"
+  className="inline-flex h-9 w-auto shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+>
+  <RefreshCw
+    size={16}
+    strokeWidth={2.2}
+    className={refreshing ? "animate-spin" : ""}
+  />
+  <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+</button>
+</div>
+
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-12">
           
           {/* LEFT COLUMN: PROFILE & VACCINES */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="space-y-6 xl:col-span-4">
             
           {/* PERSONAL INFO CARD - WITH EDIT LOGIC */}
-<div className="bg-white rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
+<div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6 relative overflow-hidden">
   <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-50 rounded-full" />
 
   <div className="flex justify-between items-start mb-6 relative z-10">
@@ -511,7 +546,7 @@ const downloadCard = async () => {
       <div>
         {isEditing ? (
           <input 
-            className="text-xl font-black text-slate-800 border-b-2 border-blue-500 outline-none w-full"
+            className="w-full min-w-0 border-b-2 border-blue-500 bg-transparent text-xl font-black text-slate-800 outline-none"
            value={editData.name || ""}
             onChange={(e) => setEditData({...editData, name: e.target.value})}
           />
@@ -643,51 +678,38 @@ const downloadCard = async () => {
   </div>
 </div>
 
-{/* Newborn / Pregnancy Toggle */}
-
-<div className="mt-4 space-y-3">
-
-{/* NEWBORN */}
-<label className="flex items-center gap-3 cursor-pointer">
-{/* Inside the Newborn Toggle */}
-<input
-  type="checkbox"
-  checked={!!editData.isNewborn} // Force boolean with !!
-  onChange={(e) => setEditData({
-    ...editData,
-    isNewborn: e.target.checked // This captures true/false correctly
-  })}
-/>
-
-<span className="text-sm font-bold text-slate-700">
-Newborn
-</span>
-
-</label>
-
-
-{/* PREGNANT */}
-
-{/* PREGNANT TOGGLE - UPDATED */}
-{editData.gender === "Female" && (
-  <label className="flex items-center gap-3 cursor-pointer">
-    <input
-      type="checkbox"
-      // Use !! to ensure it's a true boolean (not undefined/null)
-      checked={editData.pregnancyStatus === "pregnant"} 
-      onChange={(e) =>
-  setEditData({
-    ...editData,
-    pregnancyStatus: e.target.checked ? "pregnant" : "not_pregnant"
-  })
-}
-    />
-    <span className="text-sm font-bold text-pink-600">
-      Pregnant
-    </span>
-  </label>
-)}
-
+{/* Newborn / Pregnancy status */}
+<div className="mt-4 flex flex-wrap gap-2">
+  {isEditing ? (
+    <>
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input
+          type="checkbox"
+          checked={!!editData.isNewborn}
+          onChange={(e) => setEditData({ ...editData, isNewborn: e.target.checked })}
+          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+        />
+        Newborn
+      </label>
+      {editData.gender === "Female" && (
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-pink-100 bg-pink-50 px-3 py-2 text-sm font-semibold text-pink-700">
+          <input
+            type="checkbox"
+            checked={editData.pregnancyStatus === "pregnant"}
+            onChange={(e) => setEditData({ ...editData, pregnancyStatus: e.target.checked ? "pregnant" : "not_pregnant" })}
+            className="h-4 w-4 rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+          />
+          Pregnant
+        </label>
+      )}
+    </>
+  ) : (
+    <>
+      {patient?.isNewborn && <span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">Newborn</span>}
+      {patient?.pregnancyStatus === "pregnant" && <span className="rounded-full bg-pink-50 px-3 py-1.5 text-xs font-bold text-pink-700">Pregnancy active</span>}
+      {!patient?.isNewborn && patient?.pregnancyStatus !== "pregnant" && <span className="text-xs text-slate-400">No special care status recorded</span>}
+    </>
+  )}
 </div>
   </div>
 
@@ -750,7 +772,7 @@ Newborn
 
             {/* VACCINATION TABLE */}
          
-<div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+<div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
   <button 
     onClick={() => setIsVacExpanded(!isVacExpanded)} // Add [isVacExpanded, setIsVacExpanded] = useState(false) at the top
     className="w-full flex items-center justify-between mb-2 group"
@@ -804,7 +826,7 @@ Newborn
               return (
                 <div
                   key={v._id}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100"
+                  className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-sm font-bold text-slate-700">{v.vaccineName}</p>
@@ -863,188 +885,178 @@ Complete
 </div>
 
 {/* MEDICINE SECTION */}
-
-<div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
-
-  {/* HEADER */}
+<div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
   <button
-    onClick={() => setIsMedExpanded(!isMedExpanded)}
-    className="w-full flex items-center justify-between mb-2"
+    type="button"
+    onClick={() => setIsMedExpanded((open) => !open)}
+    aria-expanded={isMedExpanded}
+    className="flex min-h-11 w-full items-center justify-between gap-3 text-left"
   >
-
-    <div className="flex items-center gap-2">
-      <Activity className="text-blue-500" size={20} />
-      <h3 className="font-bold text-slate-800">Medicine Tracker</h3>
-
-      <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
-        {medicines.length}
+    <span className="flex min-w-0 items-center gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><Activity size={20} /></span>
+      <span className="min-w-0">
+        <span className="block font-bold text-slate-800">Medicine tracker</span>
+        <span className="mt-0.5 block text-xs text-slate-500">Distribution history for this patient</span>
       </span>
-    </div>
-
-    <ChevronDown
-      size={20}
-      className={`transition-transform ${isMedExpanded ? "rotate-180" : ""}`}
-    />
-
+      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{medicines.length}</span>
+    </span>
+    <ChevronDown size={19} className={`shrink-0 text-slate-500 transition-transform ${isMedExpanded ? "rotate-180" : ""}`} />
   </button>
 
+  <AnimatePresence initial={false}>
+    {isMedExpanded && (
+      <motion.div
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="overflow-hidden"
+      >
+        <div className="mt-5 border-t border-slate-100 pt-5">
+          {medicineError && (
+            <div role="alert" className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700">
+              <span>{medicineError}</span>
+              <button type="button" onClick={() => setMedicineError("")} aria-label="Dismiss error" className="font-bold">×</button>
+            </div>
+          )}
+          {medicineSuccess && <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700">{medicineSuccess}</p>}
 
-  <AnimatePresence>
-  {isMedExpanded && (
-
-  <motion.div
-    initial={{ height: 0, opacity: 0 }}
-    animate={{ height: "auto", opacity: 1 }}
-    exit={{ height: 0, opacity: 0 }}
-    transition={{ duration: 0.25 }}
-    className="overflow-hidden pt-3 border-t border-slate-50"
-  >
-
-    {/* GIVE MEDICINE BUTTON */}
-
-    <button
-      onClick={()=>setShowMedicineForm(!showMedicineForm)}
-      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg mb-3"
-    >
-      + Give Medicine
-    </button>
-
-
-    {/* FORM */}
-
-    {showMedicineForm && (
-
-      <div className="space-y-3 mb-4">
-
-        <select
-          value={medicineData.medicineId}
-          onChange={(e)=>setMedicineData({...medicineData,medicineId:e.target.value})}
-          className="w-full border rounded-lg p-2 text-sm"
-        >
-
-          <option value="">Select Medicine</option>
-
-          {medicineList.map(m => (
-            <option key={m._id} value={m._id}>
-              {m.name}
-            </option>
-          ))}
-
-        </select>
-
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={medicineData.quantity}
-          onChange={(e)=>setMedicineData({...medicineData,quantity:e.target.value})}
-          className="w-full border rounded-lg p-2 text-sm"
-        />
-
-        <button
-          onClick={giveMedicine}
-          className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs"
-        >
-          Save
-        </button>
-
-      </div>
-
-    )}
-
-
-    {/* HISTORY */}
-
-    <div className="space-y-2">
-
-      {medicines.length === 0 && (
-        <p className="text-sm text-gray-400">
-          No medicines given yet
-        </p>
-      )}
-
-      {medicines.map(m => (
-
-        <div
-          key={m._id}
-          className="flex justify-between items-center border p-2 rounded-lg"
-        >
-
-          <div>
-
-            <p className="font-semibold text-sm">
-              {m.medicineId?.name}
-            </p>
-
-            <p className="text-xs text-gray-400">
-              {new Date(m.givenDate).toLocaleDateString()}
-            </p>
-
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Medicine given</h4>
+              <p className="mt-1 text-xs text-slate-500">Record the medicine and quantity supplied.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowMedicineForm((show) => !show); setMedicineError(""); setMedicineSuccess(""); }}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            >
+              <Plus size={16} /> {showMedicineForm ? "Cancel" : "Give medicine"}
+            </button>
           </div>
 
-          <span className="text-sm font-bold">
-            {m.quantity}
-          </span>
+          {showMedicineForm && (
+            <form onSubmit={giveMedicine} className="mb-5 space-y-4 rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+              <div className="space-y-1.5">
+                <label htmlFor="patient-medicine" className="block text-xs font-bold uppercase tracking-wide text-slate-600">Medicine</label>
+                <select
+                  id="patient-medicine"
+                  required
+                  value={medicineData.medicineId}
+                  onChange={(e) => setMedicineData({ ...medicineData, medicineId: e.target.value })}
+                  className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">Select a medicine</option>
+                  {medicineList.map((medicine) => <option key={medicine._id} value={medicine._id}>{medicine.name}{medicine.dosage ? ` · ${medicine.dosage}` : ""}</option>)}
+                </select>
+                {medicineList.length === 0 && <p className="text-xs text-amber-700">No medicines are available in the medicine catalogue.</p>}
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="patient-medicine-quantity" className="block text-xs font-bold uppercase tracking-wide text-slate-600">Quantity</label>
+                <input
+                  id="patient-medicine-quantity"
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputMode="numeric"
+                  required
+                  value={medicineData.quantity}
+                  onChange={(e) => setMedicineData({ ...medicineData, quantity: e.target.value })}
+                  placeholder="Enter quantity"
+                  className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button type="button" onClick={() => { setShowMedicineForm(false); setMedicineData({ medicineId: "", quantity: "" }); setMedicineError(""); }} className="min-h-10 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Cancel</button>
+                <button type="submit" disabled={medicineSubmitting || medicineList.length === 0} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
+                  {medicineSubmitting ? "Saving…" : "Confirm distribution"}
+                </button>
+              </div>
+            </form>
+          )}
 
+          {medicines.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center">
+              <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500"><Activity size={20} /></span>
+              <p className="text-sm font-semibold text-slate-700">No medicine records yet</p>
+              <p className="mt-1 text-xs text-slate-500">Medicine distributions will appear here after they are recorded.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {medicines.map((item) => (
+                <div key={item._id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-blue-100 hover:bg-slate-50/70">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600"><Activity size={17} /></span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-800">{item.medicineId?.name || "Medicine record"}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{item.givenDate && !Number.isNaN(new Date(item.givenDate).getTime()) ? new Date(item.givenDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Date unavailable"}</p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-bold text-slate-700">Qty: {item.quantity}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-      ))}
-
-    </div>
-
-  </motion.div>
-
-  )}
+      </motion.div>
+    )}
   </AnimatePresence>
-
 </div>
-
           </div>
 
           {/* RIGHT COLUMN: VITALS & CHART */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="min-w-0 space-y-6 xl:col-span-8">
             
             {/* ADD VITALS FORM */}
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] p-6">
-              <div className="flex items-center gap-2 mb-6 text-white">
-                <Plus size={20} className="bg-pink-500 rounded-lg p-0.5" />
+            <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-5 flex items-center gap-2 text-slate-800">
+                <Plus size={20} className="bg-blue-300 rounded-lg p-1" />
                 <h3 className="font-bold">Record New Vitals</h3>
               </div>
-              <form onSubmit={handleAddVital} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {vitalsMessage && <p role="status" className={`mb-4 rounded-xl px-3 py-2 text-sm ${vitalsMessage.toLowerCase().includes("success") ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-amber-200 bg-amber-50 text-amber-800"}`}>{vitalsMessage}</p>}
+              <form onSubmit={handleAddVital} className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">BP (120/80)</label>
-                  <input name="bloodPressure" value={formData.bloodPressure} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">BP (120/80)</label>
+                  <input name="bloodPressure" value={formData.bloodPressure} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Weight (kg)</label>
-                  <input name="weight" value={formData.weight} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Weight (kg)</label>
+                  <input type="number" min="0" step="0.1" name="weight" value={formData.weight} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Glucose</label>
-                  <input name="glucose" value={formData.glucose} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Glucose</label>
+                  <input type="number" min="0" name="glucose" value={formData.glucose} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Heart Rate</label>
-                  <input name="heartRate" value={formData.heartRate} onChange={handleChange} className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Heart Rate</label>
+                  <input type="number" min="0" name="heartRate" value={formData.heartRate} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div className="col-span-2 md:col-span-3 space-y-1">
-                  <label className="text-[10px] font-black text-blue-200 uppercase ml-2">Notes</label>
-                  <input name="notes" value={formData.notes} onChange={handleChange} placeholder="General health notes..." className="w-full bg-white rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-400 transition-all" />
+                  <label className="ml-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Notes</label>
+                  <input name="notes" value={formData.notes} onChange={handleChange} placeholder="General health notes..." className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div className="flex items-end">
-                  <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 rounded-xl text-sm transition-all shadow-lg shadow-pink-900/20">
-                    Save
+                  <button type="submit" disabled={vitalsSubmitting} className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                    {vitalsSubmitting ? "Saving…" : "Save vitals"}
                   </button>
                 </div>
               </form>
             </div>
 
             {/* CHART SECTION */}
-            <div className="bg-white rounded-[2.5rem] p-6 shadow-xl">
+            <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
               <div className="flex items-center gap-2 mb-6">
                 <TrendingUp className="text-blue-500" size={20} />
                 <h3 className="font-bold text-slate-800">Health Trends</h3>
               </div>
-              <div className="h-64 w-full">
+              {chartData.length === 0 ? (
+                <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center">
+                  <TrendingUp size={24} className="mb-2 text-slate-400" />
+                  <p className="text-sm font-semibold text-slate-700">Not enough data to show a trend</p>
+                  <p className="mt-1 text-xs text-slate-500">Record weight or glucose measurements to populate this chart.</p>
+                </div>
+              ) : (
+              <div className="h-56 w-full sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -1056,15 +1068,16 @@ Complete
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+              )}
             </div>
 
             {/* VITALS TABLE */}
-            <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl">
+            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
               <div className="p-6 border-b border-slate-50 flex items-center gap-2">
                 <Activity className="text-rose-500" size={20} />
                 <h3 className="font-bold text-slate-800">Vitals History</h3>
               </div>
-              <table className="w-full text-left">
+              <div className="w-full overflow-x-auto"><table className="w-full min-w-[600px] text-left">
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">BP</th>
@@ -1074,6 +1087,7 @@ Complete
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
+                  {vitals.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-500">No vitals recorded yet.</td></tr>}
                   {vitals.map(v => (
                     <tr key={v._id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-4 text-sm font-bold text-slate-700">{v.bloodPressure}</td>
@@ -1083,7 +1097,7 @@ Complete
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         </div>

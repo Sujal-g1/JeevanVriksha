@@ -41,6 +41,14 @@ router.get(
   medicineController.getAshaStock
 );
 
+/* GET ASHA MEDICINE DISTRIBUTION HISTORY */
+router.get(
+  "/my-distributions",
+  verifyToken,
+  authorizeRole("asha"),
+  medicineController.getMyDistributions
+);
+
 /* PATIENT CONFIRMS MEDICINE */
 router.post(
   "/confirm",

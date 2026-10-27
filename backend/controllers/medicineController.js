@@ -33,34 +33,6 @@ exports.createMedicine = async (req, res) => {
 };
 
 
-/* --------------------------------
-ADD MEDICINE STOCK TO ASHA
--------------------------------- */
-
-// exports.addStockToAsha = async (req, res) => {
-
-//   try {
-
-//     const { ashaId, medicineId, quantity } = req.body;
-
-//     const stock = await AshaStock.create({
-//       ashaId,
-//       medicineId,
-//       quantity
-//     });
-
-//     res.json({
-//       message: "Stock added to ASHA",
-//       stock
-//     });
-
-//   } catch (error) {
-
-//     res.status(500).json({ message: "Server error" });
-
-//   }
-
-// };
 exports.addStockToAsha = async (req, res) => {
 
   try {
@@ -104,190 +76,108 @@ exports.addStockToAsha = async (req, res) => {
 
 };
 
-/* --------------------------------
-ASHA DISTRIBUTES MEDICINE
--------------------------------- */
-// exports.distributeMedicine = async (req, res) => {
-
-//   try {
-
-//     const { patientId, medicineId, quantity } = req.body;
-
-//     // 1️⃣ Find ASHA stock for this medicine
-//     const stock = await AshaStock.findOne({
-//       ashaId: req.user.id,
-//       medicineId
-//     });
-
-//     if (!stock) {
-//       return res.status(400).json({
-//         message: "Medicine not available in ASHA stock"
-//       });
-//     }
-
-//     // 2️⃣ Check stock quantity
-//     if (stock.quantity < quantity) {
-//       return res.status(400).json({
-//         message: "Insufficient medicine stock"
-//       });
-//     }
-
-//     // 3️⃣ Deduct stock
-//     stock.quantity -= quantity;
-//     await stock.save();
-
-//     // 4️⃣ Create distribution record
-//     const distribution = await MedicineDistribution.create({
-//       patientId,
-//       medicineId,
-//       quantity,
-//       ashaId: req.user.id
-//     });
-
-//     res.json({
-//       message: "Medicine distributed",
-//       distribution
-//     });
-
-//   } catch (error) {
-
-//     console.error("MEDICINE DISTRIBUTION ERROR:", error);
-
-//     res.status(500).json({
-//       message: "Server error"
-//     });
-
-//   }
-
-// };
-
-// ----
 
 
-// exports.distributeMedicine = async (req, res) => {
+exports.distributeMedicine = async (req, res) => {
+  try {
+    const { patientId, medicineId, quantity } = req.body;
+    const ashaId = req.user.id;
 
-//   try {
+    // Validate input
+    const requestedQuantity = Number(quantity);
 
-//     const { patientId, medicineId, quantity } = req.body;
+    if (
+      !patientId ||
+      !medicineId ||
+      !Number.isInteger(requestedQuantity) ||
+      requestedQuantity <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Patient, medicine, and a valid positive quantity are required",
+      });
+    }
 
-//     // find stock
-//     const stock = await AshaStock.findOne({
-//       ashaId: req.user.id,
-//       medicineId
-//     });
+    // Find this medicine in the logged-in ASHA's stock
+    const stock = await AshaStock.findOne({
+      ashaId,
+      medicineId,
+    });
 
-//     if (!stock) {
-//       return res.status(400).json({
-//         message: "Medicine not available in ASHA stock"
-//       });
-//     }
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "This medicine is not available in your stock",
+      });
+    }
 
-//     if (stock.quantity < quantity) {
-//       return res.status(400).json({
-//         message: "Not enough stock"
-//       });
-//     }
+    if (stock.quantity < requestedQuantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient stock. Available quantity: ${stock.quantity}`,
+      });
+    }
 
-//     // deduct stock
-//     stock.quantity -= quantity;
-//     await stock.save();
+    // Atomically deduct stock so concurrent requests cannot overspend it
+    const updatedStock = await AshaStock.findOneAndUpdate(
+      {
+        _id: stock._id,
+        quantity: { $gte: requestedQuantity },
+      },
+      {
+        $inc: { quantity: -requestedQuantity },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-//     // create distribution record
-//     const distribution = await MedicineDistribution.create({
-//       patientId,
-//       medicineId,
-//       quantity,
-//       ashaId: req.user.id
-//     });
+    if (!updatedStock) {
+      return res.status(409).json({
+        success: false,
+        message: "Stock changed during this request. Refresh and try again.",
+      });
+    }
 
-//     res.json({
-//       message: "Medicine distributed",
-//       distribution,
-//       remainingStock: stock.quantity
-//     });
+    // Create the distribution record
+    let distribution;
 
-//   } catch (error) {
+    try {
+      distribution = await MedicineDistribution.create({
+        patientId,
+        medicineId,
+        quantity: requestedQuantity,
+        ashaId,
+        givenDate: new Date(),
+      });
+    } catch (error) {
+      // Restore stock if recording the distribution fails
+      await AshaStock.updateOne(
+        { _id: updatedStock._id },
+        { $inc: { quantity: requestedQuantity } }
+      );
 
-//     console.error("DISTRIBUTE ERROR:", error);
+      throw error;
+    }
 
-//     res.status(500).json({
-//       message: "Server error"
-//     });
+    return res.status(201).json({
+      success: true,
+      message: "Medicine distributed and stock updated successfully",
+      distribution,
+      remainingStock: updatedStock.quantity,
+    });
+  } catch (error) {
+    console.error("DISTRIBUTE MEDICINE ERROR:", error);
 
-//   }
-
-// };
-
-exports.distributeMedicine = async (req,res) => {
-
-try{
-
-const { patientId, medicineId, quantity } = req.body
-
-// Validation
-if(!patientId || !medicineId || !quantity){
-return res.status(400).json({
-message:"Missing required fields"
-})
-}
-
-// ASHA ID FROM TOKEN
-const ashaId = req.user.id
-const distribution = await MedicineDistribution.create({
-patientId,
-medicineId,
-quantity,
-ashaId,
-givenDate:new Date()
-})
-
-res.json({
-message:"Medicine distributed",
-distribution
-})
-
-}catch(err){
-
-console.error("DISTRIBUTE ERROR:",err)
-
-res.status(500).json({
-message:"Server error"
-})
-
-}
-
-}
+    return res.status(500).json({
+      success: false,
+      message: "Failed to distribute medicine",
+    });
+  }
+};
 
 
-/* --------------------------------
-PATIENT CONFIRMS MEDICINE
--------------------------------- */
-// exports.confirmMedicine = async (req, res) => {
-
-//   try {
-
-//     const { distributionId } = req.body;
-
-//     const distribution = await MedicineDistribution.findByIdAndUpdate(
-
-//       distributionId,
-//       { confirmedByPatient: true },
-//       { new: true }
-
-//     );
-
-//     res.json({
-//       message: "Medicine confirmed",
-//       distribution
-//     });
-
-//   } catch (error) {
-
-//     res.status(500).json({ message: "Server error" });
-
-//   }
-
-// };
 
 exports.confirmMedicine = async (req, res) => {
 
@@ -376,6 +266,40 @@ exports.getAshaStock = async (req, res) => {
 
 };
 
+
+/* --------------------------------
+GET ASHA MEDICINE DISTRIBUTION HISTORY
+-------------------------------- */
+
+exports.getMyDistributions = async (req, res) => {
+  try {
+    const ashaId = req.user.id;
+
+    if (!ashaId) {
+      return res.status(401).json({
+        message: "ASHA user ID not found in authentication token",
+      });
+    }
+
+    const distributions = await MedicineDistribution.find({ ashaId })
+      .populate("patientId", "name phone village")
+      .populate("medicineId", "name category dosage")
+      .sort({ givenDate: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: distributions.length,
+      distributions,
+    });
+  } catch (error) {
+    console.error("GET ASHA DISTRIBUTIONS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch medicine distribution history",
+    });
+  }
+};
+
 /* --------------------------------
 GET ALL MEDICINES
 -------------------------------- */
@@ -398,6 +322,7 @@ exports.getAllMedicines = async (req, res) => {
   }
 
 };
+
 
 /* --------------------------------
 GET ASHA STOCK by ADMIN

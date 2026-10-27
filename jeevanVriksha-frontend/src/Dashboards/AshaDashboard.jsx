@@ -26,6 +26,13 @@ import { useTranslation } from "react-i18next";
 
 import AshaNavbar from "../components/AshaNavbar";
 import ActivityFeed from "../components/ActivityFeed";
+import {
+  getMyMedicineStock,
+  cacheMedicineStock,
+  getCachedMedicineStock,
+} from "../services/medicineService";
+import AshaMedicineInventory from "../components/AshaMedicineInventory";
+
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -146,13 +153,14 @@ const AshaDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [medicineStock, setMedicineStock] = useState([]);
   const [isMedicineExpanded, setIsMedicineExpanded] = useState(false);
+  const [medicineStockLoading, setMedicineStockLoading] = useState(true);
+  const [medicineStockError, setMedicineStockError] = useState("");
   const [expandedTask, setExpandedTask] = useState(null);
   const [showConfirm, setShowConfirm] = useState(null);
   const [busyTask, setBusyTask] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  const quickActions = useMemo(
-    () => [
+  const quickActions = useMemo( () => [
       {
         title: "View patients",
         subtitle: "Find a patient record",
@@ -343,6 +351,64 @@ const AshaDashboard = () => {
     (task) => String(task.status || "pending").toLowerCase() !== "completed"
   );
 
+  // medicine
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadMedicineStock = async () => {
+      setMedicineStockLoading(true);
+      setMedicineStockError("");
+
+      try {
+        if (!navigator.onLine) {
+          const cached = await getCachedMedicineStock();
+
+          if (!cancelled) {
+            setMedicineStock(cached);
+          }
+
+          return;
+        }
+
+        const stock = await getMyMedicineStock();
+
+        await cacheMedicineStock(stock);
+
+        if (!cancelled) {
+          setMedicineStock(stock);
+        }
+      } catch (error) {
+        console.error("Medicine stock error:", error);
+
+        try {
+          const cached = await getCachedMedicineStock();
+
+          if (!cancelled && cached.length > 0) {
+            setMedicineStock(cached);
+            return;
+          }
+        } catch (cacheError) {
+          console.error("Offline cache error:", cacheError);
+        }
+
+        if (!cancelled) {
+          setMedicineStockError(error.message || "Failed to load medicine stock");
+        }
+      } finally {
+        if (!cancelled) {
+          setMedicineStockLoading(false);
+        }
+      }
+    };
+
+    loadMedicineStock();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
   const attentionCount = stats.highRisk + stats.vaccineDue + alerts.length;
 
   return (
@@ -494,6 +560,7 @@ const AshaDashboard = () => {
         {/* Work areas */}
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-8">
+
             {/* Tasks */}
             <section className={`${panelClass} overflow-hidden`}>
               <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -658,27 +725,197 @@ const AshaDashboard = () => {
               </div>
             </section>
 
-            {/* Activity */}
-            <section className={`${panelClass} overflow-hidden`}>
-              <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
-                  <Activity size={18} />
-                </span>
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900">Recent activity</h2>
-                  <p className="mt-0.5 text-xs text-slate-500">Latest updates from your health work</p>
-                </div>
-              </div>
-              <div className={`p-2 sm:p-4 ${loading ? "opacity-60" : ""}`}>
-                <ActivityFeed activity={activity} />
-              </div>
-            </section>
+                {/* monthly progress */}
+       <section className="relative flex h-full min-h-[160px] flex-col overflow-hidden rounded-2xl border border-teal-800 bg-[#164fac] p-4 text-white shadow-[0_8px_28px_rgba(15,93,88,0.16)] sm:min-h-[190px] sm:p-5">
+  <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full border-[22px] border-white/[0.06]" />
+  <div className="pointer-events-none absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-teal-400/10 blur-2xl" />
+
+  <div className="relative flex flex-1 flex-col">
+    <div className="mb-3 flex items-center gap-2">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-teal-100">
+        <Target size={16} />
+      </span>
+      <div>
+        <h2 className="text-sm font-bold">Monthly progress</h2>
+        <p className="mt-0.5 text-[11px] text-teal-100/75">
+          Your care journey this month
+        </p>
+      </div>
+    </div>
+
+    <div className="mb-2 flex items-end justify-between gap-3">
+      <span className="text-2xl font-bold tracking-tight">65%</span>
+      <span className="mb-1 inline-flex items-center gap-1 text-[11px] font-medium text-teal-100">
+        <ArrowDownRight size={13} className="rotate-[-45deg]" />
+        Monthly target
+      </span>
+    </div>
+
+    <div className="h-2 overflow-hidden rounded-full bg-black/20">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: "65%" }}
+        transition={{ duration: 1.1, ease: "easeOut" }}
+        className="h-full rounded-full bg-[#7fa4f4]"
+      />
+    </div>
+
+    <p className="mt-2 text-[9px] leading-4 text-teal-50/80">
+      Keep recording visits and follow-ups to maintain an accurate picture of community care.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => navigate("/todo")}
+      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/15"
+    >
+      View daily tasks
+      <ArrowRight size={14} />
+    </button>
+  </div>
+        </section>
+
+       
           </div>
 
           {/* Right column */}
           <aside className="space-y-5 lg:col-span-4">
+          
+            {/* Medicine stock */}
+        <section className={`${panelClass} overflow-hidden`}>
+          <button
+            type="button"
+            onClick={() => setIsMedicineExpanded((expanded) => !expanded)}
+            aria-expanded={isMedicineExpanded}
+            className="flex w-full items-center gap-3 p-5 text-left transition hover:bg-slate-50 sm:p-6"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+              <Package size={19} />
+            </span>
+
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-slate-900">
+                Medicine stock
+              </span>
+
+              <span className="mt-1 block text-xs text-slate-500">
+                {medicineStock.length}{" "}
+                {medicineStock.length === 1 ? "item" : "items"} in your stock list
+              </span>
+            </span>
+
+            <ChevronDown
+              size={18}
+              className={`shrink-0 text-slate-400 transition-transform ${
+                isMedicineExpanded ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {isMedicineExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-2 border-t border-slate-100 p-4 sm:p-5">
+                  {medicineStockLoading ? (
+                    <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-6">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+                      <p className="text-xs font-medium text-slate-500">
+                        Loading medicine stock...
+                      </p>
+                    </div>
+                  ) : medicineStockError && medicineStock.length === 0 ? (
+                    <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
+                      <Package
+                        size={22}
+                        className="mx-auto mb-2 text-red-400"
+                      />
+                      <p className="text-xs font-semibold text-red-600">
+                        Unable to load medicine stock
+                      </p>
+                      <p className="mt-1 text-xs text-red-500">
+                        {medicineStockError}
+                      </p>
+                    </div>
+                  ) : medicineStock.length === 0 ? (
+                    <div className="rounded-xl bg-slate-50 px-4 py-6 text-center">
+                      <Package
+                        size={22}
+                        className="mx-auto mb-2 text-slate-300"
+                      />
+                      <p className="text-xs font-medium text-slate-500">
+                        No medicines available
+                      </p>
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        Medicines assigned to you will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    medicineStock.slice(0, 3).map((stock) => {
+                      const medicine =
+                        typeof stock.medicineId === "object" &&
+                        stock.medicineId !== null
+                          ? stock.medicineId
+                          : null;
+
+                      return (
+                        <div
+                          key={
+                            stock._id ||
+                            medicine?._id ||
+                            stock.medicineId ||
+                            stock.name
+                          }
+                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-3 transition hover:border-teal-100 hover:bg-teal-50/30"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-bold text-slate-800">
+                              {medicine?.name || stock.name || "Medicine"}
+                            </p>
+
+                            <p className="mt-1 text-[11px] text-slate-500">
+                              {medicine?.dosage ||
+                                stock.dosage ||
+                                "Dosage not specified"}
+                            </p>
+                          </div>
+
+                          <span className="shrink-0 rounded-lg bg-teal-50 px-2.5 py-1.5 text-xs font-bold tabular-nums text-teal-800">
+                            {stock.quantity ?? 0} units
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+
+                  {!medicineStockLoading &&
+                    !medicineStockError &&
+                    medicineStock.length > 3 && (
+                      <p className="px-1 pt-1 text-xs text-slate-500">
+                        +{medicineStock.length - 3} more medicine types
+                      </p>
+                    )}
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/asha/medicine-inventory")}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                  >
+                    <Package size={16} />
+                    View detailed inventory
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
             {/* Attention summary */}
-            <section className={`${panelClass} p-5 sm:p-6`}>
+        <section className={`${panelClass} p-5 sm:p-6`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Needs attention</p>
@@ -721,110 +958,8 @@ const AshaDashboard = () => {
                 Review alerts
                 <ArrowRight size={14} />
               </button>
-            </section>
+        </section>
 
-            {/* Medicine stock */}
-            <section className={`${panelClass} overflow-hidden`}>
-              <button
-                type="button"
-                onClick={() => setIsMedicineExpanded((expanded) => !expanded)}
-                aria-expanded={isMedicineExpanded}
-                className="flex w-full items-center gap-3 p-5 text-left transition hover:bg-slate-50 sm:p-6"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                  <Package size={19} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-bold text-slate-900">Medicine stock</span>
-                  <span className="mt-1 block text-xs text-slate-500">
-                    {medicineStock.length} {medicineStock.length === 1 ? "item" : "items"} in your stock list
-                  </span>
-                </span>
-                <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform ${isMedicineExpanded ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence initial={false}>
-                {isMedicineExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="space-y-2 border-t border-slate-100 p-4 sm:p-5">
-                      {medicineStock.length === 0 ? (
-                        <div className="rounded-xl bg-slate-50 px-4 py-6 text-center">
-                          <Package size={22} className="mx-auto mb-2 text-slate-300" />
-                          <p className="text-xs font-medium text-slate-500">No medicines available</p>
-                        </div>
-                      ) : (
-                        medicineStock.map((stock) => (
-                          <div
-                            key={stock._id}
-                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-3 transition hover:border-teal-100 hover:bg-teal-50/30"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-xs font-bold text-slate-800">
-                                {stock.medicineId?.name || "Medicine"}
-                              </p>
-                              <p className="mt-1 text-[11px] text-slate-500">
-                                {stock.medicineId?.dosage || "Dosage not specified"}
-                              </p>
-                            </div>
-                            <span className="shrink-0 rounded-lg bg-teal-50 px-2.5 py-1.5 text-xs font-bold tabular-nums text-teal-800">
-                              {stock.quantity ?? 0}
-                            </span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </section>
-
-            {/* Monthly progress */}
-            <section className="relative overflow-hidden rounded-2xl border border-teal-800 bg-[#164fac] p-5 text-white shadow-[0_8px_28px_rgba(15,93,88,0.16)] sm:p-6">
-              <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full border-[22px] border-white/[0.06]" />
-              <div className="pointer-events-none absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-teal-400/10 blur-2xl" />
-              <div className="relative">
-                <div className="mb-5 flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-teal-100">
-                    <Target size={18} />
-                  </span>
-                  <div>
-                    <h2 className="text-sm font-bold">Monthly progress</h2>
-                    <p className="mt-0.5 text-[11px] text-teal-100/75">Your care journey this month</p>
-                  </div>
-                </div>
-                <div className="mb-2 flex items-end justify-between gap-3">
-                  <span className="text-3xl font-bold tracking-tight">65%</span>
-                  <span className="mb-1 inline-flex items-center gap-1 text-[11px] font-medium text-teal-100">
-                    <ArrowDownRight size={13} className="rotate-[-45deg]" />
-                    Monthly target
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-black/20">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "65%" }}
-                    transition={{ duration: 1.1, ease: "easeOut" }}
-                    className="h-full rounded-full bg-[#7fa4f4]"
-                  />
-                </div>
-                <p className="mt-3 text-xs leading-5 text-teal-50/80">
-                  Keep recording visits and follow-ups to maintain an accurate picture of community care.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate("/todo")}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white/15"
-                >
-                  View daily tasks
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </section>
           </aside>
         </div>
 

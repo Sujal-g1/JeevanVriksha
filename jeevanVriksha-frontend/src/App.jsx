@@ -35,6 +35,7 @@ import { syncPatients } from "./services/syncPatients";
 import { syncQueue } from "./services/queueSyncService";
 
 import { syncMedicineQueue } from "./services/syncMedicineQueue";
+import AshaMedicineInventory from "./components/AshaMedicineInventory";
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ user, role, children }) => {
@@ -148,6 +149,15 @@ useEffect(() => {
           }
         />
 
+     <Route
+    path="/asha/medicine-inventory"
+    element={
+      <ProtectedRoute user={user} role="asha">
+        <AshaMedicineInventory />
+      </ProtectedRoute>
+    }
+  />
+
         {/* Admin Dashboard */}
         <Route
           path="/admin-dashboard"
@@ -173,6 +183,7 @@ useEffect(() => {
         <Route path="/todo" element={<TodoPage />} />
         <Route path="/asha-module" element={<AshaModule />} />
 
+        
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
 

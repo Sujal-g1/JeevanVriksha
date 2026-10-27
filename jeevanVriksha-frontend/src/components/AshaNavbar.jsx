@@ -100,7 +100,7 @@ const AshaNavbar = () => {
   return (
     <>
       <nav className="fixed inset-x-0 top-0 z-[100] border-b border-white/10 bg-gradient-to-r from-[#063c78] via-[#07519a] to-[#064a8f] shadow-lg shadow-slate-950/10">
-        <div className="mx-auto flex h-16 w-full max-w-[1920px] items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
+        <div className="relative mx-auto flex h-16 w-full max-w-[1920px] items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
 
           {/* Brand and ASHA profile */}
           <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3.5">
@@ -134,6 +134,12 @@ const AshaNavbar = () => {
               </div>
             </div>
           </div>
+
+           <div className="pointer-events-none absolute left-1/2 -translate-x-1/2">
+          <h1 className="whitespace-nowrap text-lg font-extrabold tracking-wide text-white sm:text-xl">
+            Jeevan<span className="text-emerald-300">Vriksha</span>
+          </h1>
+        </div>
 
           {/* Action buttons */}
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">

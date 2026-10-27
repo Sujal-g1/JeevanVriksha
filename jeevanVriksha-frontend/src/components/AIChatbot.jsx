@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../assets/logo.png";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -29,7 +31,6 @@ const AIChatbot = ({ close }) => {
   const [mute, setMute] = useState(false);
 
   const scrollRef = useRef(null);
-
   // ---------- AUTO SCROLL ----------
 
   useEffect(() => {
@@ -74,67 +75,101 @@ const AIChatbot = ({ close }) => {
   };
 
   // ---------- SEND MESSAGE ----------
-  const sendMessage = async (manualText) => {
+ 
+const sendMessage = async (manualText) => {
+  const textToProcess = (manualText ?? input).trim();
 
-    const textToProcess = manualText || input;
-    if (!textToProcess.trim()) return;
-    stopSpeaking();
-    const newMessages = [
-      ...messages,
-      { role: "user", text: textToProcess }
-    ];
+  if (!textToProcess || loading) return;
 
-    setMessages(newMessages);
-    setInput("");
-    setLoading(true);
+  stopSpeaking();
+
+  const newMessages = [
+    ...messages,
+    { role: "user", text: textToProcess },
+  ];
+
+  setMessages(newMessages);
+  setInput("");
+  setLoading(true);
+
+  try {
+    const response = await fetch(`${API}/api/ai/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: textToProcess,
+      }),
+    });
+
+    // Read the body safely, even if the server returns HTML or invalid JSON.
+    const rawResponse = await response.text();
+
+    let data = {};
 
     try {
-      const response = await fetch(`${API}/api/ai/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: textToProcess,
-        }),
+      data = rawResponse ? JSON.parse(rawResponse) : {};
+    } catch {
+      console.error("AI server returned non-JSON:", rawResponse);
+    }
+
+    if (!response.ok) {
+      console.error("AI API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: data,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (response.status === 502 || response.status === 503 ||
+          response.status === 504) {
         throw new Error(
-          data.reply || "Unable to get an AI response."
+          "The AI service is temporarily unavailable. Please try again shortly."
         );
       }
 
-      if (typeof data.reply !== "string" || !data.reply.trim()) {
-        throw new Error("The AI returned an empty response.");
-      }
-
-      const reply = data.reply.trim();
-
-      setMessages([
-        ...newMessages,
-        { role: "assistant", text: reply },
-      ]);
-
-      speakResponse(reply);
-    } catch (error) {
-      console.error("AI error:", error);
-
-      setMessages([
-        ...newMessages,
-        {
-          role: "assistant",
-          text: error.message || "Unable to connect to the AI service. Please try again.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
+      throw new Error(
+        data.reply ||
+        data.message ||
+        `AI request failed (${response.status}).`
+      );
     }
 
-  };
+    // Support common response shapes while diagnosing the API.
+    const reply =
+      typeof data.reply === "string" ? data.reply.trim() :
+      typeof data.response === "string" ? data.response.trim() :
+      typeof data.message === "string" ? data.message.trim() :
+      "";
 
+    if (!reply) {
+      console.error("Unexpected AI response structure:", data);
+      throw new Error(
+        "The AI service returned no answer. Please try again."
+      );
+    }
+
+    setMessages([
+      ...newMessages,
+      { role: "assistant", text: reply },
+    ]);
+
+    speakResponse(reply);
+  } catch (error) {
+    console.error("AI chat request failed:", error);
+
+    setMessages([
+      ...newMessages,
+      {
+        role: "assistant",
+        text: error.message ||
+          "Unable to connect to the AI service. Please try again.",
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ---------- MUTE ----------
   const startVoiceInput = () => {
@@ -203,40 +238,33 @@ const AIChatbot = ({ close }) => {
     transition={{ type: "spring", damping: 25 }}
     className="
       absolute inset-x-0 bottom-0 mx-auto
-      flex h-[100vh] h-[100dvh] min-h-0 w-full max-w-2xl
+      flex h-[100dvh] min-h-0 w-full max-w-2xl
       flex-col overflow-hidden overscroll-none
-      border border-white/40 bg-white/95
-      shadow-2xl backdrop-blur-2xl
+      border border-blue-200/70
+      bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.30),transparent_44%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.40),transparent_42%),linear-gradient(135deg,#B9DEFF_0%,#E5F2FF_35%,#C9E4FF_68%,#A9D2F5_100%)]
+      shadow-2xl shadow-blue-900/15
+      backdrop-blur-2xl
       rounded-t-2xl
       sm:inset-y-1/2 sm:bottom-auto
       sm:h-[min(88dvh,700px)]
       sm:-translate-y-1/2 sm:rounded-3xl
-    "
+"
       >
 
         {/* HEADER */}
 
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-200/70 px-4 py-3 sm:px-5">
+      <div className="flex shrink-0 items-center justify-between border-b border-blue-300/70 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-3">
 
-            {/* <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg">
-              <Sparkles className="text-white" size={20} />
-            </div> */}
-             <img src={Logo} alt="logo" className="h-10 w-10 shrink-0 rounded-xl object-contain sm:h-11 sm:w-11" />
+          <img src={Logo} alt="logo" className="h-12 w-12 shrink-0 bg-blue-200 rounded-xl object-contain sm:h-11 sm:w-11" />
 
             <div>
-              <h2 className="text-lg font-bold text-slate-800">
+              <h2 className="text-lg font-bold text-blue-800">
                 SEVA-AI
               </h2>
 
               <div className="flex items-center gap-1.5">
-
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                 
-                </span>
-
+              <span className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
               </div>
 
             </div>
@@ -381,15 +409,59 @@ const AIChatbot = ({ close }) => {
             >
 
               <div
-                className={`max-w-[80%] md:max-w-[70%] p-4
-                rounded-[1.8rem] text-sm leading-relaxed shadow-sm
-                ${m.role === "user"
-                    ? "bg-blue-600 text-white rounded-tr-none"
-                    : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
-                  }`}
+                className={`min-w-0 p-4 text-sm leading-relaxed shadow-sm
+                ${
+                  m.role === "user"
+                    ? "max-w-[85%] rounded-[1.5rem] rounded-tr-none bg-white/70 text-slate-700"
+                    : "w-fit max-w-[95%] rounded-[1.5rem] rounded-tl-none border border-blue-200/70 bg-white/75 text-slate-700 backdrop-blur-sm sm:max-w-[90%]"
+                }
+              `}
               >
-
+            {m.role === "assistant" ? (
+              <div
+                className="
+                  text-sm leading-7 text-slate-700
+                  [&_p]:mb-3
+                  [&_p:last-child]:mb-0
+                  [&_h1]:mb-3 [&_h1]:mt-5
+                  [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-blue-900
+                  [&_h2]:mb-2 [&_h2]:mt-5
+                  [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-blue-900
+                  [&_h3]:mb-2 [&_h3]:mt-4
+                  [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-blue-800
+                  [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5
+                  [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5
+                  [&_li]:mb-1 [&_li]:pl-1
+                  [&_strong]:font-bold [&_strong]:text-slate-900
+                  [&_blockquote]:my-3 [&_blockquote]:border-l-4
+                  [&_blockquote]:border-blue-400 [&_blockquote]:pl-3
+                  [&_blockquote]:text-slate-600
+                  [&_hr]:my-4 [&_hr]:border-blue-200
+                  [&_table]:my-3 [&_table]:w-full
+                  [&_table]:border-collapse [&_th]:bg-blue-100
+                  [&_th]:p-2 [&_td]:p-2
+                  [&_th]:text-left [&_th]:text-blue-900
+                  [&_th]:border [&_td]:border
+                  [&_th]:border-blue-200 [&_td]:border-blue-200
+                  [&_a]:text-blue-700 [&_a]:underline
+                  [&_code]:rounded [&_code]:bg-blue-100
+                  [&_code]:px-1 [&_code]:py-0.5
+                  [&_pre]:my-3 [&_pre]:overflow-x-auto
+                  [&_pre]:rounded-xl [&_pre]:bg-slate-900
+                  [&_pre]:p-3 [&_pre]:text-blue-50
+                  [&_pre_code]:bg-transparent
+                  [&_pre_code]:p-0
+                "
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {m.text}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <p className="whitespace-pre-wrap break-words">
                 {m.text}
+              </p>
+            )}
 
               </div>
 
@@ -406,70 +478,71 @@ const AIChatbot = ({ close }) => {
                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]" />
                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]" />
               </span>
-              AI thinking...
+              Analyzing...
             </div>
           )}
         </div>
 
         {/* INPUT BAR */}
-        <div className="shrink-0 border-t border-slate-200/70 bg-white/80 p-3 sm:p-4">
-        <div 
-        className=" flex w-full min-w-0 items-center gap-2
-        rounded-2xl border border-slate-200
-        bg-white p-1.5 shadow-lg shadow-slate-200/40
-        sm:p-2
+       <div className="shrink-0 border-t border-blue-300 p-3 backdrop-blur-xl sm:p-4">
+  <div
+    className="
+      flex w-full min-w-0 items-center gap-2
+      rounded-2xl border border-blue-200/80
+      bg-blue-200/10 p-1.5
+      shadow-lg shadow-blue-900/[0.08]
+      transition-all duration-200
+      focus-within:border-blue-400
+      focus-within:ring-4 focus-within:ring-blue-400/10
+      sm:p-2
+    "
+  >
+    <input
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+      placeholder="Ask a health question..."
+      className="
+        min-w-0 flex-1 bg-transparent px-2 py-2
+        text-sm text-slate-800 outline-none
+        placeholder:text-slate-400
+
       "
-          >
+    />
 
-            {/* <button
-              onClick={startVoiceInput}
-              className={`p-3.5 rounded-xl transition-all
-              ${isListening
-                  ? "bg-red-500 text-white animate-pulse"
-                  : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                }`}
-            >
-              <Mic size={20} />
-            </button> */}
+    <button
+      onClick={() => sendMessage()}
+      disabled={!input.trim()}
+      className="
+        flex h-10 w-10 shrink-0 items-center justify-center
+        rounded-xl
+        bg-gradient-to-br from-[#236DB5] to-[#174A8B]
+        text-white shadow-md shadow-blue-900/20
+        transition-all duration-200
+        hover:from-[#1D5F9F] hover:to-[#123D75]
+        active:scale-95
+        disabled:cursor-not-allowed disabled:opacity-40
+        disabled:shadow-none
+      "
+    >
+      <Send size={20} />
+    </button>
 
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && sendMessage()
-              }
-              placeholder="Ask a health question..."
-              className=" min-w-0 flex-1 bg-transparent px-2 py-2
-              text-sm text-slate-800 outline-none
-              placeholder:text-slate-400
-            "
-            />
-
-            <button
-              onClick={() => sendMessage()}
-              disabled={!input.trim()}
-              className=" flex h-10 w-10 shrink-0 items-center justify-center
-              rounded-xl bg-blue-600 text-white shadow-md
-              transition-colors hover:bg-blue-700
-              disabled:cursor-not-allowed disabled:opacity-40
-            "
-            >
-              <Send size={20} />
-            </button>
-
-              <button
-                onClick={toggleMute}
-                className=" flex h-10 w-10 shrink-0 items-center justify-center
-                rounded-xl bg-slate-100 text-slate-600
-                transition-colors hover:bg-slate-200
-              "
-                >
-             {mute ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </button>
-
-          </div>
-
-        </div>
+    <button
+      onClick={toggleMute}
+      className="
+        flex h-10 w-10 shrink-0 items-center justify-center
+        rounded-xl border border-blue-100
+        bg-[#EAF4FF] text-[#245A8D]
+        transition-colors duration-200
+        hover:bg-[#D8EAFE]
+        active:scale-95
+      "
+    >
+      {mute ? <VolumeX size={18} /> : <Volume2 size={18} />}
+    </button>
+  </div>
+</div>
 
       </motion.div>
 
