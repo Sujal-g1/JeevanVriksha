@@ -9,7 +9,7 @@ const verifyToken = require("../middleware/authMiddleware");
 const authorizeRole = require("../middleware/roleMiddleware");
 
 
-   GET ALL PATIENTS (ASHA)
+  //  GET ALL PATIENTS (ASHA)
 router.get("/", verifyToken, authorizeRole("asha"), async (req, res) => {
   try {
     const patients = await Patient.find().sort({ createdAt: -1 });
