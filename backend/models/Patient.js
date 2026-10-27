@@ -19,8 +19,28 @@ const patientSchema = new mongoose.Schema({
   email: String,
 
   village: String,
-  age: Number,
   bloodGroup: String,
+
+  ageYears: {
+  type: Number,
+  min: 0,
+  max: 120,
+  default: 0,
+},
+
+ageMonths: {
+  type: Number,
+  min: 0,
+  max: 11,
+  default: 0,
+},
+
+ageDays: {
+  type: Number,
+  min: 0,
+  max: 30,
+  default: 0,
+},
 
   gender: {
     type: String,

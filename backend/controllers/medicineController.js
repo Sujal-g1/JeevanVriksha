@@ -233,12 +233,12 @@ message:"Missing required fields"
 
 // ASHA ID FROM TOKEN
 const ashaId = req.user.id
-
 const distribution = await MedicineDistribution.create({
 patientId,
 medicineId,
 quantity,
-ashaId
+ashaId,
+givenDate:new Date()
 })
 
 res.json({

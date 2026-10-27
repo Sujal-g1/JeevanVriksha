@@ -22,8 +22,12 @@ const visitRoutes = require("./routes/visitRoutes")
 const dashboardRoutes = require("./routes/dashboardRoutes")
 
 
-
 const app = express();
+
+app.use((req, res, next) => {
+  console.log(`📥 Incoming request: ${req.method} ${req.url}`);
+  next();
+});
 
 // Connect DB
 connectDB();
@@ -44,12 +48,14 @@ app.use(cors({
   credentials: true
 }));
 
+// Middleware
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Server is working");
 });
 
-// Middleware
-app.use(express.json());
+
 
 // Auth routes
 app.use("/api/auth", authRoutes);
