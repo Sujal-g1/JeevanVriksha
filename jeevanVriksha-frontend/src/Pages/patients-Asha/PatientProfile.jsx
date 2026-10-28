@@ -626,37 +626,129 @@ const downloadCard = async () => {
 
     {/* Age and blood Group */}
 
-    <div className="grid grid-cols-2 gap-3 mt-4">
-      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Age</p>
-        {isEditing ? (
-          <input 
+    
+<div className="mt-4 grid grid-cols-2 gap-3">
+  {/* Age */}
+  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+    <p className="mb-2 text-[9px] font-black uppercase text-slate-400">
+      Age
+    </p>
+
+    {isEditing ? (
+      <div className="space-y-2">
+        <div>
+          <label className="mb-1 block text-[10px] font-semibold text-slate-500">
+            Years
+          </label>
+          <input
             type="number"
-            className="w-full bg-transparent font-black text-slate-700 outline-none"
-            value={editData.age}
-            onChange={(e) => setEditData({...editData, age: e.target.value})}
+            min="0"
+            max="120"
+            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-blue-400"
+            value={editData.ageYears ?? 0}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                ageYears: e.target.value,
+              })
+            }
           />
-        ) : (
-          <p className="text-sm font-black text-slate-700">{patient?.age} Yrs</p>
-        )}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-[10px] font-semibold text-slate-500">
+            Months
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="11"
+            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-blue-400"
+            value={editData.ageMonths ?? 0}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                ageMonths: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-[10px] font-semibold text-slate-500">
+            Days
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="30"
+            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-blue-400"
+            value={editData.ageDays ?? 0}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                ageDays: e.target.value,
+              })
+            }
+          />
+        </div>
       </div>
-      <div className="p-3 bg-rose-50 rounded-2xl border border-rose-100/50">
-        <p className="text-[9px] font-black text-rose-300 uppercase mb-1 text-center">Blood</p>
-        {isEditing ? (
-          <select 
-            className="w-full bg-transparent font-black text-rose-600 outline-none text-center"
-            value={editData.bloodGroup}
-            onChange={(e) => setEditData({...editData, bloodGroup: e.target.value})}
-          >
-            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => (
-              <option key={bg} value={bg}>{bg}</option>
-            ))}
-          </select>
-        ) : (
-          <p className="text-sm font-black text-rose-600 text-center">{patient?.bloodGroup}</p>
-        )}
+    ) : (
+      <div className="text-sm font-black leading-6 text-slate-700">
+        {Number(patient?.ageYears ?? 0) > 0 &&
+          `${patient.ageYears} ${Number(patient.ageYears) === 1 ? "year" : "years"} `}
+        {Number(patient?.ageMonths ?? 0) > 0 &&
+          `${patient.ageMonths} ${Number(patient.ageMonths) === 1 ? "month" : "months"} `}
+        {Number(patient?.ageDays ?? 0) > 0 &&
+          `${patient.ageDays} ${Number(patient.ageDays) === 1 ? "day" : "days"}`}
+        {Number(patient?.ageYears ?? 0) === 0 &&
+          Number(patient?.ageMonths ?? 0) === 0 &&
+          Number(patient?.ageDays ?? 0) === 0 &&
+          patient?.age != null &&
+          `${patient.age} ${Number(patient.age) === 1 ? "year" : "years"}`}
+        {Number(patient?.ageYears ?? 0) === 0 &&
+          Number(patient?.ageMonths ?? 0) === 0 &&
+          Number(patient?.ageDays ?? 0) === 0 &&
+          patient?.age == null &&
+          "Not specified"}
       </div>
-    </div>
+    )}
+  </div>
+
+  {/* Blood Group */}
+  <div className="rounded-2xl border border-rose-100/50 bg-rose-50 p-3">
+    <p className="mb-2 text-center text-[9px] font-black uppercase text-rose-300">
+      Blood
+    </p>
+
+    {isEditing ? (
+      <select
+        className="w-full rounded-lg border border-rose-100 bg-white px-2 py-2 text-center text-sm font-black text-rose-600 outline-none"
+        value={editData.bloodGroup ?? ""}
+        onChange={(e) =>
+          setEditData({
+            ...editData,
+            bloodGroup: e.target.value,
+          })
+        }
+      >
+        <option value="">Select group</option>
+        {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(
+          (bg) => (
+            <option key={bg} value={bg}>
+              {bg}
+            </option>
+          )
+        )}
+      </select>
+    ) : (
+      <p className="text-center text-sm font-black text-rose-600">
+        {patient?.bloodGroup || "Not specified"}
+      </p>
+    )}
+  </div>
+</div>
+
 
     <div className="flex items-center gap-3">
   <Droplets size={16} className="text-rose-400" />

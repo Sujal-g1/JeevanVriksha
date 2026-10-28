@@ -27,6 +27,8 @@ router.get(
   patientController.getMyPatientProfile
 );
 
+router.get("/health-card/:id", patientController.getPublicHealthCard);
+
 
 // Get patient profile by id
 router.get("/:id", verifyToken, async (req, res) => {
@@ -52,36 +54,7 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// updating patient 
-// router.put("/update/:id", verifyToken, async (req, res) => {
-//   try {
 
-//     const Patient = require("../models/Patient");
-
-//     const updatedPatient = await Patient.findByIdAndUpdate(
-//       req.params.id,
-//       req.body,
-//       { new: true }
-//     );
-
-//     if (!updatedPatient) {
-//       return res.status(404).json({
-//         message: "Patient not found"
-//       });
-//     }
-
-//     res.json(updatedPatient);
-
-//   } catch (error) {
-
-//     console.error(error);
-
-//     res.status(500).json({
-//       message: "Server error"
-//     });
-
-//   }
-// });
 
 
 // UPDATE PATIENT PROFILE

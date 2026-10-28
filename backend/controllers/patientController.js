@@ -139,3 +139,44 @@ exports.getFullDashboardData = async (req, res) => {
   }
 
 };
+
+exports.getPublicHealthCard = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!require("mongoose").isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid patient ID",
+      });
+    }
+
+    const patient = await Patient.findById(id).select(
+      "name village age ageYears ageMonths ageDays gender bloodGroup allergies chronicDiseases"
+    );
+
+    if (!patient) {
+      return res.status(404).json({
+        message: "Patient not found",
+      });
+    }
+
+    const vitals = await Vital.find({
+      patientId: patient._id,
+    })
+      .select("bloodPressure weight createdAt")
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    return res.json({
+      patient,
+      vitals,
+    });
+  } catch (error) {
+    console.error("Public health card error:", error);
+
+    return res.status(500).json({
+      message: "Unable to load health card",
+    });
+  }
+};

@@ -137,7 +137,7 @@ const AshaNavbar = () => {
 
            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2">
           <h1 className="whitespace-nowrap text-lg font-extrabold tracking-wide text-white sm:text-xl">
-            Jeevan<span className="text-emerald-300">Vriksha</span>
+            Jeevan<span className="text-blue-200">Vriksha</span>
           </h1>
         </div>
 

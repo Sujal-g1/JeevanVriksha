@@ -13,6 +13,8 @@ import {
   UserPlus,
   WifiOff,
   Phone,
+  Mars,
+  Venus,
   X,
 } from "lucide-react";
 import AshaNavbar from "../../components/AshaNavbar";
@@ -23,24 +25,62 @@ import {
 
 const API = import.meta.env.VITE_API_URL;
 
-const getAgeLabel = (patient) => {
-  const years = patient.ageYears;
-  const months = patient.ageMonths;
-  const days = patient.ageDays;
 
-  if (years !== undefined || months !== undefined || days !== undefined) {
-    const parts = [];
-    if (Number(years) > 0) parts.push(`${years} ${Number(years) === 1 ? "year" : "years"}`);
-    if (Number(months) > 0) parts.push(`${months} ${Number(months) === 1 ? "month" : "months"}`);
-    if (Number(days) > 0) parts.push(`${days} ${Number(days) === 1 ? "day" : "days"}`);
-    return parts.length ? parts.join(" ") : "Age not specified";
+const getAgeLabel = (patient) => {
+  const age = patient.age;
+
+  // Legacy age field takes priority when populated.
+  if (age !== null && age !== undefined && age !== "") {
+    const value = Number(age);
+
+    if (Number.isFinite(value) && value >= 0) {
+      return `${value} ${value === 1 ? "year" : "years"}`;
+    }
   }
 
-  if (patient.age !== undefined && patient.age !== null && patient.age !== "") {
-    return `${patient.age} ${Number(patient.age) === 1 ? "year" : "years"}`;
+  const years = Number(patient.ageYears || 0);
+  const months = Number(patient.ageMonths || 0);
+  const days = Number(patient.ageDays || 0);
+
+  if (years > 0 || months > 0 || days > 0) {
+    const parts = [];
+
+    if (years > 0) parts.push(`${years} ${years === 1 ? "year" : "years"}`);
+    if (months > 0) parts.push(`${months} ${months === 1 ? "month" : "months"}`);
+    if (days > 0) parts.push(`${days} ${days === 1 ? "day" : "days"}`);
+
+    return parts.join(" ");
   }
 
   return "Age not specified";
+};
+
+const GenderIcon = ({ gender }) => {
+  const normalizedGender = gender?.trim().toLowerCase();
+
+  if (normalizedGender === "male") {
+    return <Mars size={19} strokeWidth={2} />;
+  }
+
+  if (normalizedGender === "female") {
+    return <Venus size={19} strokeWidth={2} />;
+  }
+
+  return <UserRound size={19} strokeWidth={2} />;
+};
+
+const getGenderStyles = (gender) => {
+  const normalizedGender = gender?.trim().toLowerCase();
+
+  if (normalizedGender === "male") {
+    return "bg-blue-50 text-blue-600";
+  }
+
+  if (normalizedGender === "female") {
+    return "bg-pink-50 text-pink-600";
+  }
+
+  return "bg-slate-100 text-slate-500";
 };
 
 const PatientList = () => {
@@ -375,7 +415,12 @@ const PatientList = () => {
                             <td className="px-6 py-4">
                               <div className="flex min-w-[200px] items-center gap-3">
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                  <UserRound size={19} />
+                                <div  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getGenderStyles(
+                                patient.gender )}`}
+                              title={patient.gender || "Gender not specified"}
+                            >
+                              <GenderIcon gender={patient.gender} />
+                            </div>
                                 </div>
                                 <div className="min-w-0">
                                   <p className="truncate text-sm font-bold text-slate-800">
@@ -433,7 +478,13 @@ const PatientList = () => {
                         className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-slate-50 active:bg-blue-50"
                       >
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                          <UserRound size={21} />
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${getGenderStyles(
+                            patient.gender
+                          )}`}
+                          title={patient.gender || "Gender not specified"}
+                        >
+                          <GenderIcon gender={patient.gender} />
+                        </div>
                         </div>
 
                         <div className="min-w-0 flex-1">
