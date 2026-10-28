@@ -840,7 +840,7 @@ const downloadCard = async () => {
     {/* Change pregnancyExists to patient?.isPregnant */}
 {patient?.pregnancyStatus === "pregnant" && (
   <button
-    onClick={() => navigate(`/pregnancy/${id}`)}
+    onClick={() => navigate(`/patients/${id}/pregnancy`)}
     className="w-full mt-3 bg-pink-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-pink-600 transition-all"
   >
     Pregnancy Tracker
@@ -1326,76 +1326,72 @@ JeevanVriksha Rural Healthcare System
 
 </div>
 
+  {/* qr code */}
+    <AnimatePresence>
+      {showQR && (
+        // We use a Portal logic here by wrapping the fixed div
+        <div className="fixed inset-0 z-[9999] isolate">
+          
+          {/* 1. Backdrop - Forced to cover the entire device screen */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowQR(false)}
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-md"
+            style={{ height: '100vh', width: '100vw' }}
+          />
 
-
-      {/* MODAL QR OVERLAY - SCROLL-PROOF PORTAL */}
-<AnimatePresence>
-  {showQR && (
-    // We use a Portal logic here by wrapping the fixed div
-    <div className="fixed inset-0 z-[9999] isolate">
-      
-      {/* 1. Backdrop - Forced to cover the entire device screen */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => setShowQR(false)}
-        className="fixed inset-0 bg-slate-900/80 backdrop-blur-md"
-        style={{ height: '100vh', width: '100vw' }}
-      />
-
-      {/* 2. Centering Wrapper - Forces the card into the center of the VIEWPORT */}
-      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0, y: 40 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 40 }}
-          className="relative bg-white w-full max-w-[340px] rounded-[2.5rem] p-6 shadow-2xl overflow-hidden pointer-events-auto"
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Decorative Top Accent */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-pink-500" />
-
-          <div className="text-center mb-6 pt-2">
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">Health Pass</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Scan for Full Record</p>
-          </div>
-
-          {/* QR CODE CONTAINER */}
-         <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-6 mb-6 flex justify-center items-center">
-
-  <div className="flex justify-center items-center">
-
-    <QRCodeCanvas
-      value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
-      size={160}
-      level="H"
-      includeMargin={true}
-    />
-
-  </div>
-
-</div>
-
-
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm font-black text-slate-800">{patient?.name || "Unknown"}</p>
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">Verified Asha Digital Record</p>
-            </div>
-
-            <button 
-              onClick={() => setShowQR(false)} 
-              className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-200 active:scale-95 transition-transform"
+          {/* 2. Centering Wrapper - Forces the card into the center of the VIEWPORT */}
+          <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 40 }}
+              className="relative bg-white w-full max-w-[340px] rounded-[2.5rem] p-6 shadow-2xl overflow-hidden pointer-events-auto"
+              onClick={e => e.stopPropagation()}
             >
-              Close Window
-            </button>
-          </div>
-        </motion.div>
+              {/* Decorative Top Accent */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-pink-500" />
+
+              <div className="text-center mb-6 pt-2">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight">Health Pass</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Scan for Full Record</p>
+              </div>
+
+              {/* QR CODE CONTAINER */}
+            <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-6 mb-6 flex justify-center items-center">
+
+      <div className="flex justify-center items-center">
+      <QRCodeCanvas
+         value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
+        size={160}
+        level="H"
+        includeMargin
+      />
       </div>
+
     </div>
-  )}
-</AnimatePresence>
+
+
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-sm font-black text-slate-800">{patient?.name || "Unknown"}</p>
+                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">Verified Asha Digital Record</p>
+                </div>
+
+                <button 
+                  onClick={() => setShowQR(false)} 
+                  className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-200 active:scale-95 transition-transform"
+                >
+                  Close Window
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
       
       
     </div>

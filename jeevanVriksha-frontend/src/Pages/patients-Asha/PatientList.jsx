@@ -190,7 +190,7 @@ const PatientList = () => {
     <div className="min-h-screen bg-slate-50">
       <AshaNavbar />
 
-      <main className="relative isolate min-h-screen overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pt-28">
+      <main className="relative isolate min-h-screen overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pt-28 bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)] ">
         <div className="pointer-events-none absolute -right-24 top-24 -z-10 h-72 w-72 rounded-full bg-blue-100/70 blur-3xl" />
         <div className="pointer-events-none absolute -left-24 top-[28rem] -z-10 h-72 w-72 rounded-full bg-cyan-100/60 blur-3xl" />
 
@@ -327,7 +327,7 @@ const PatientList = () => {
             </div>
           )}
 
-          <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50">
+          <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-100 shadow-xl shadow-slate-200/50">
             <div className="flex flex-col gap-1 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div>
                 <h2 className="font-bold text-slate-900">Registered patients</h2>

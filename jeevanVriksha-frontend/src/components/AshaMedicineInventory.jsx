@@ -327,7 +327,7 @@ export default function AshaMedicineInventory() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen text-slate-900 bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)] ">
       {/* Reuse the exact navbar from the ASHA Patient Database page */}
       <AshaNavbar />
 
@@ -467,7 +467,7 @@ export default function AshaMedicineInventory() {
           )}
 
           {/* Main content */}
-          <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50">
+          <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-100 shadow-xl shadow-slate-200/50">
             <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div className="flex flex-wrap gap-2">
                 {tabs.map(({ id, label, icon: Icon }) => (

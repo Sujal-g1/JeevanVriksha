@@ -28,6 +28,13 @@ const patientSchema = new mongoose.Schema({
   default: 0,
 },
 
+publicHealthToken: {
+  type: String,
+  unique: true,
+  sparse: true,
+  select: false,
+},
+
 ageMonths: {
   type: Number,
   min: 0,

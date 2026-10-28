@@ -36,6 +36,7 @@ import { syncQueue } from "./services/queueSyncService";
 
 import { syncMedicineQueue } from "./services/syncMedicineQueue";
 import AshaMedicineInventory from "./components/AshaMedicineInventory";
+import PregnancyOverview from "./Pages/pregnancy/PregnancyOverview";
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ user, role, children }) => {
@@ -172,9 +173,11 @@ useEffect(() => {
         <Route path="/patients/:id" element={<PatientProfile />} />
 
         <Route path="/scan" element={<QRScanner />} />
+        {/* <Route path="/health-card/:id" element={<HealthCard />} /> */}
         <Route path="/health-card/:id" element={<HealthCard />} />
 
         <Route path="/pregnancy/:id" element={<PregnancyDashboard/>}/>
+        <Route path="/patients/:id/pregnancy" element={<PregnancyOverview />}/>
         <Route path="/newborn/:id" element={<NewbornDashboard/>}/>  
 
         <Route path="/create-patient" element={<CreatePatient/>}/>  

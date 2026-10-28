@@ -94,7 +94,7 @@ const InfoCard = ({ icon: Icon, label, value, tone }) => {
 };
 
 const HealthCard = () => {
-  const { id } = useParams();
+  const { token } = useParams();
   const [patient, setPatient] = useState(null);
   const [vitals, setVitals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,9 +117,7 @@ const HealthCard = () => {
     setError("");
 
     try {
-      const response = await fetch(
-        `${API}/api/patients/health-card/${encodeURIComponent(id)}`
-      );
+      const response = await fetch( `${API}/api/patients/public-health-card/${encodeURIComponent(token)}` );
 
       const data = await response.json();
 

@@ -116,7 +116,7 @@ const CreatePatient = () => {
     <div className="min-h-screen bg-slate-50">
       <AshaNavbar />
 
-      <main className="relative overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pt-28">
+      <main className="relative overflow-hidden px-4 pb-12 pt-24 sm:px-6 sm:pt-28 bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)] ">
         {/* Background decoration */}
         <div className="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl" />
         <div className="pointer-events-none absolute -left-24 top-96 h-72 w-72 rounded-full bg-cyan-100/50 blur-3xl" />
@@ -172,7 +172,7 @@ const CreatePatient = () => {
           </div>
 
           {/* Form card */}
-          <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50">
+          <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-100 shadow-xl shadow-slate-200/50">
             <div className="border-b border-slate-100 px-5 py-5 sm:px-8">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">

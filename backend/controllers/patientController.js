@@ -8,7 +8,6 @@ const MedicineDistribution = require("../models/MedicineDistribution");
 // ---------------- PATIENT PROFILE ----------------
 
 exports.getMyPatientProfile = async (req, res) => {
-
   try {
 
     const patient = await Patient
@@ -33,57 +32,6 @@ exports.getMyPatientProfile = async (req, res) => {
 
 };
 
-
-// ---------------- DASHBOARD DATA ----------------
-
-// exports.getFullDashboardData = async (req, res) => {
-
-//   try {
-
-//     const patient = await Patient
-//       .findOne({ userId: req.user.id })
-//       .populate("ashaId", "name workerId");
-
-//     if (!patient) {
-//       return res.status(404).json({
-//         message: "Patient profile not found"
-//       });
-//     }
-
-//     const vitals = await Vital
-//       .find({ patientId: patient._id })
-//       .sort({ createdAt: -1 })
-//       .limit(5);
-
-//     const vaccinations = await Vaccination
-//       .find({ patientId: patient._id });
-
-//     const visits = await Visit
-//       .find({ patientId: patient._id })
-//       .sort({ visitDate: -1 });
-
-//     const newborn = await Newborn
-//       .find({ motherId: patient._id });
-
-//     res.json({
-//       profile: patient,
-//       vitals,
-//       vaccinations,
-//       visits,
-//       newborn
-//     });
-
-//   } catch (error) {
-
-//     console.error(error);
-
-//     res.status(500).json({
-//       message: "Server error"
-//     });
-
-//   }
-
-// };
 
 exports.getFullDashboardData = async (req, res) => {
 
@@ -140,23 +88,29 @@ exports.getFullDashboardData = async (req, res) => {
 
 };
 
+
+
 exports.getPublicHealthCard = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { token } = req.params;
 
-    if (!require("mongoose").isValidObjectId(id)) {
-      return res.status(400).json({
-        message: "Invalid patient ID",
+    if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
+      return res.status(404).json({
+        message: "Health card not found or link expired",
       });
     }
 
-    const patient = await Patient.findById(id).select(
-      "name village age ageYears ageMonths ageDays gender bloodGroup allergies chronicDiseases"
-    );
+    const patient = await Patient.findOne({
+      publicHealthToken: token,
+    })
+      .select(
+        "name village age ageYears ageMonths ageDays gender bloodGroup allergies chronicDiseases"
+      )
+      .lean();
 
     if (!patient) {
       return res.status(404).json({
-        message: "Patient not found",
+        message: "Health card not found or link expired",
       });
     }
 
@@ -168,7 +122,7 @@ exports.getPublicHealthCard = async (req, res) => {
       .limit(10)
       .lean();
 
-    return res.json({
+    return res.set("Cache-Control", "no-store").json({
       patient,
       vitals,
     });

@@ -331,14 +331,14 @@ const TodoPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen text-slate-800 bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)] ">
       <AshaNavbar />
 
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6 lg:px-8 ">
         {/* Back navigation */}
         <button
           onClick={() => navigate(-1)}
-          className="mb-7 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+          className="mb-7 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition  hover:text-blue-700"
         >
           <ArrowLeft size={16} />
           Back to Dashboard
@@ -492,7 +492,7 @@ const TodoPage = () => {
           {/* Create/edit form */}
           <div
             id="task-form"
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm"
           >
             <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
               <div className="flex items-center gap-3">
@@ -650,7 +650,7 @@ const TodoPage = () => {
           </div>
 
           {/* Task list */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">

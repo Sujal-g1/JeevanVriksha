@@ -77,7 +77,6 @@ exports.addStockToAsha = async (req, res) => {
 };
 
 
-
 exports.distributeMedicine = async (req, res) => {
   try {
     const { patientId, medicineId, quantity } = req.body;
@@ -176,7 +175,6 @@ exports.distributeMedicine = async (req, res) => {
     });
   }
 };
-
 
 
 exports.confirmMedicine = async (req, res) => {

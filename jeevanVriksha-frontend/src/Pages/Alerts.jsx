@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_API_URL;
 
-const Alerts = () => {
+const   Alerts = () => {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
 
@@ -33,7 +33,7 @@ const Alerts = () => {
       const data = await res.json();
 
       console.log("Alerts API response:", data);
-console.table(
+    console.table(
   Array.isArray(data)
     ? data.map((alert) => ({
         message: alert.message,
@@ -154,10 +154,10 @@ const getAlertTime = (alert) => {
   ).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen text-slate-800 bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)] ">
       <AshaNavbar />
 
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6 lg:px-8 ">
         {/* Back navigation */}
         <button
           onClick={() => navigate(-1)}
@@ -306,7 +306,7 @@ const getAlertTime = (alert) => {
         </section>
 
         {/* Alert list */}
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
           <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
             <div>
               <h2 className="text-lg font-bold text-slate-900">

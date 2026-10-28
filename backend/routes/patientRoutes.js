@@ -27,7 +27,10 @@ router.get(
   patientController.getMyPatientProfile
 );
 
-router.get("/health-card/:id", patientController.getPublicHealthCard);
+router.get(
+  "/public-health-card/:token",
+  patientController.getPublicHealthCard
+);
 
 
 // Get patient profile by id
