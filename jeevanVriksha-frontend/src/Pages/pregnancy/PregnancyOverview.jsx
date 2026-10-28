@@ -585,12 +585,12 @@ const PregnancyOverview = () => {
 
             <button
               onClick={() =>
-                navigate(`/patients/${id}/pregnancy/register`)
+                navigate(`/pregnancy/${id}/`)
               }
               className="relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-teal-800 shadow-sm transition hover:bg-teal-50"
             >
               <Plus size={18} />
-              Register ANC Visit
+              Register data
             </button>
           </div>
         </header>
