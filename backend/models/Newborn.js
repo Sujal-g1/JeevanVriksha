@@ -1,20 +1,53 @@
+
 const mongoose = require("mongoose");
 
-const newbornSchema = new mongoose.Schema({
+const newbornSchema = new mongoose.Schema(
+  {
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient",
+      required: true,
+      unique: true,
+      index: true,
+    },
 
-patientId:{
-type:mongoose.Schema.Types.ObjectId,
-ref:"Patient"
-},
+    // Birth profile
+    birthDate: Date,
+    gender: {
+      type: String,
+      enum: ["Female", "Male", "Other", "Unknown", ""],
+      default: "",
+    },
+    birthWeight: Number,
+    birthLength: Number,
+    headCircumference: Number,
+    deliveryType: String,
+    birthPlace: String,
+    birthComplications: String,
+    gestationalAgeWeeks: Number,
 
-birthWeight:Number,
-temperature:Number,
-breastfeeding:String,
-notes:String
+    // Current health observations
+    temperature: Number,
+    breastfeeding: String,
+    feedingFrequency: String,
+    urineOutput: String,
+    stoolStatus: String,
+    jaundice: String,
+    cordCondition: String,
 
-},{
-timestamps:true
-})
+    // Follow-up and immunization summary
+    immunizationStatus: {
+      type: String,
+      enum: ["Up to date", "Pending", "Not verified", ""],
+      default: "",
+    },
+    nextVisitDate: Date,
+    lastVisitDate: Date,
+
+    // Additional information
+    notes: String,
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Newborn", newbornSchema);
-

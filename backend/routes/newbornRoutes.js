@@ -1,46 +1,62 @@
+
 const express = require("express");
 const router = express.Router();
+
 const Newborn = require("../models/Newborn");
-const { generateNewbornVaccines } = require("../utils/generateNewbornVaccines")
+const { generateNewbornVaccines } = require("../utils/generateNewbornVaccines");
 
+router.get("/:patientId", async (req, res) => {
+  try {
+    const record = await Newborn.findOne({
+      patientId: req.params.patientId,
+    });
 
-router.get("/:patientId", async(req,res)=>{
+    return res.json(record || {});
+  } catch (error) {
+    console.error("Get newborn error:", error);
+    return res.status(500).json({ message: "Unable to load newborn record." });
+  }
+});
 
-const data = await Newborn.findOne({
-patientId:req.params.patientId
-})
+router.post("/update", async (req, res) => {
+  try {
+    const { patientId, birthDate } = req.body;
 
-res.json(data || {})
+    if (!patientId) {
+      return res.status(400).json({ message: "Patient ID is required." });
+    }
 
-})
+    const existing = await Newborn.findOne({ patientId });
+    const update = { ...req.body };
+    delete update._id;
+    delete update.__v;
+    delete update.createdAt;
+    delete update.updatedAt;
 
+    const record = await Newborn.findOneAndUpdate(
+      { patientId },
+      { $set: update },
+      { new: true, upsert: true, runValidators: true }
+    );
 
-router.post("/update", async(req,res)=>{
+    // Only generate a schedule when the birth date is known.
+    // The generator checks for existing vaccine records, avoiding duplicates.
+    const effectiveBirthDate = birthDate || record.birthDate;
 
-const { patientId } = req.body
+    if (effectiveBirthDate) {
+      await generateNewbornVaccines(patientId, new Date(effectiveBirthDate));
+    }
 
-let record = await Newborn.findOne({patientId})
+    return res.json({
+      message: existing
+        ? "Newborn record updated successfully."
+        : "Newborn record created successfully.",
+      newborn: record,
+    });
+  } catch (error) {
+    console.error("Save newborn error:", error);
+    return res.status(500).json({ message: "Unable to save newborn record." });
+  }
+});
 
-if(record){
-
-record = await Newborn.findOneAndUpdate(
-{patientId},
-req.body,
-{new:true}
-)
-
-}else{
-
-record = await Newborn.create(req.body)
-
-// generate vaccination schedule
-await generateNewbornVaccines(patientId, new Date())
-
-}
-
-res.json(record)
-
-})
-
-
-module.exports = router
+module.exports = router;

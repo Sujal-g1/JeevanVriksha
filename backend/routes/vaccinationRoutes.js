@@ -13,3 +13,4 @@ router.get("/:patientId", getVaccinations);
 router.patch("/complete/:id", completeVaccination)
 
 module.exports = router;
+

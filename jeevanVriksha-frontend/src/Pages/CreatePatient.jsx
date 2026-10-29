@@ -25,6 +25,7 @@ const initialForm = {
   name: "",
   phone: "",
   password: "",
+  dob: "",
   ageYears: "0",
   ageMonths: "0",
   ageDays: "0",
@@ -46,7 +47,21 @@ const CreatePatient = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+  
+    if (name === "dob") {
+      const age = calculateAge(value);
+  
+      setForm((prev) => ({
+        ...prev,
+        dob: value,
+        ageYears: age ? String(age.years) : "",
+        ageMonths: age ? String(age.months) : "",
+        ageDays: age ? String(age.days) : "",
+      }));
+  
+      return;
+    }
+  
     setForm((prev) => ({
       ...prev,
       [name]: value,
@@ -110,6 +125,44 @@ const CreatePatient = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const calculateAge = (dob) => {
+    if (!dob) return null;
+  
+    const birthDate = new Date(`${dob}T00:00:00`);
+    const today = new Date();
+  
+    if (
+      Number.isNaN(birthDate.getTime()) ||
+      birthDate > new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    ) {
+      return null;
+    }
+  
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
+  
+    if (days < 0) {
+      months--;
+  
+      // Number of days in the previous calendar month
+      const previousMonthDays = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        0
+      ).getDate();
+  
+      days += previousMonthDays;
+    }
+  
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+  
+    return { years, months, days };
   };
 
   return (
@@ -229,86 +282,72 @@ const CreatePatient = () => {
 
 
                     {/* Age */}
-                <div className="sm:col-span-2">
-                  <label className={labelClass}>
-                    Patient Age <span className="text-red-500">*</span>
-                  </label>
+               {/* Date of Birth */}
+<div className="sm:col-span-2">
+  <label htmlFor="dob" className={labelClass}>
+    Date of Birth <span className="text-red-500">*</span>
+  </label>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Years */}
-                    <div>
-                      <label
-                        htmlFor="ageYears"
-                        className="mb-1.5 block text-xs font-medium text-slate-500"
-                      >
-                        Years
-                      </label>
-                      <input
-                        id="ageYears"
-                        name="ageYears"
-                        type="number"
-                        min="0"
-                        max="120"
-                        step="1"
-                        placeholder="0"
-                        value={form.ageYears ?? ""}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                        required
-                      />
-                    </div>
+  <div className="relative">
+    <CalendarDays
+      size={18}
+      className="pointer-events-none absolute left-3.5 top-1/2
+        -translate-y-1/2 text-slate-400"
+    />
 
-                    {/* Months */}
-                    <div>
-                      <label
-                        htmlFor="ageMonths"
-                        className="mb-1.5 block text-xs font-medium text-slate-500"
-                      >
-                        Months
-                      </label>
-                      <input
-                        id="ageMonths"
-                        name="ageMonths"
-                        type="number"
-                        min="0"
-                        max="11"
-                        step="1"
-                        placeholder="0"
-                        value={form.ageMonths ?? ""}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                        required
-                      />
-                    </div>
+    <input
+      id="dob"
+      name="dob"
+      type="date"
+      value={form.dob}
+      onChange={handleChange}
+      max={new Date().toLocaleDateString("en-CA")}
+      className={inputClass}
+      required
+    />
+  </div>
+</div>
 
-                    {/* Days */}
-                    <div>
-                      <label
-                        htmlFor="ageDays"
-                        className="mb-1.5 block text-xs font-medium text-slate-500"
-                      >
-                        Days
-                      </label>
-                      <input
-                        id="ageDays"
-                        name="ageDays"
-                        type="number"
-                        min="0"
-                        max="30"
-                        step="1"
-                        placeholder="0"
-                        value={form.ageDays ?? ""}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                        required
-                      />
-                    </div>
-                  </div>
+{/* Automatically calculated age */}
+<div className="sm:col-span-2">
+  <label className={labelClass}>
+    Patient Age
+  </label>
 
-                  <p className="mt-2 text-xs text-slate-400">
-                    For a newborn, enter 0 years, 0 months, and the baby's age in days.
-                  </p>
-                </div>
+  <div className="grid grid-cols-3 gap-3">
+    {[
+      { name: "ageYears", label: "Years" },
+      { name: "ageMonths", label: "Months" },
+      { name: "ageDays", label: "Days" },
+    ].map(({ name, label }) => (
+      <div key={name}>
+        <label
+          htmlFor={name}
+          className="mb-1.5 block text-xs font-medium text-slate-500"
+        >
+          {label}
+        </label>
+
+        <input
+          id={name}
+          name={name}
+          type="number"
+          value={form[name]}
+          readOnly
+          placeholder="—"
+          className="w-full cursor-not-allowed rounded-xl border
+            border-slate-200 bg-slate-200/60 px-3 py-3
+            text-sm font-semibold text-slate-700 outline-none"
+          required
+        />
+      </div>
+    ))}
+  </div>
+
+  <p className="mt-2 text-xs text-slate-500">
+    Age is calculated automatically from the date of birth.
+  </p>
+</div>
 
                     {/* Gender */}
                     <div>

@@ -179,8 +179,6 @@ useEffect(() => {
   checkData();
 }, [id]);
 
-
-
 // Update useEffect to sync these from the patient object
 useEffect(() => {
   if (patient) {
@@ -242,32 +240,7 @@ await checkData();
     alert("Update failed.");
   }
 };
-// const handleUpdatePatient = async () => {
-//   try {
-//     const user = JSON.parse(localStorage.getItem("user"));
-//     const response = await fetch(`http://localhost:5001/api/patients/update/${id}`, {
-//       method: "PUT",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${user.token}`
-//       },
-//       body: JSON.stringify(editData)
-//     });
 
-//     if (response.ok) {
-//       const updated = await response.json();
-//       setPatient(updated);
-//       setIsEditing(false);
-      
-//       await checkData(); 
-//       // ---------------------
-
-//       alert("Profile updated successfully!");
-//     }
-//   } catch (err) {
-//     alert("Update failed. Please check your connection.");
-//   }
-// };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -353,34 +326,6 @@ useEffect(() => {
 }, [id])
 
 
-
-// ----- health card
-// const downloadCard = async () => {
-
-//   const element = document.getElementById("healthCard");
-
-//   if (!element) {
-//     alert("Health card not ready");
-//     return;
-//   }
-
-//   const canvas = await html2canvas(element, {
-//     scale: 3,
-//     useCORS: true
-//   });
-
-//   const imgData = canvas.toDataURL("image/png");
-
-//   const pdf = new jsPDF("landscape", "mm", "a4");
-
-//   const width = 260;
-//   const height = (canvas.height * width) / canvas.width;
-
-//   pdf.addImage(imgData, "PNG", 10, 20, width, height);
-
-//   pdf.save(`${patient?.name || "patient"}_HealthCard.pdf`);
-// };
-
 const downloadCard = async () => {
 
   const original = document.getElementById("healthCard");
@@ -427,9 +372,6 @@ const downloadCard = async () => {
 
   pdf.save(`${patient?.name || "patient"}_HealthCard.pdf`);
 };
-
-
-
 
   const handleAddVital = async (e) => {
     e.preventDefault();
@@ -497,10 +439,12 @@ const downloadCard = async () => {
 }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12 text-slate-800">
+    <div className="min-h-screen bg-slate-50 pb-12 text-slate-800
+    bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)]">
       <AshaNavbar />
 
-      <main className="mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 lg:px-8
+      ">
 
      <div className="mb-6 flex flex-wrap items-center  gap-3">
   <button
@@ -518,7 +462,7 @@ const downloadCard = async () => {
   disabled={refreshing}
   aria-label="Refresh page"
   title="Refresh page"
-  className="inline-flex h-9 w-auto shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+  className="inline-flex h-9 w-auto shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
 >
   <RefreshCw
     size={16}
@@ -535,7 +479,7 @@ const downloadCard = async () => {
           <div className="space-y-6 xl:col-span-4">
             
           {/* PERSONAL INFO CARD - WITH EDIT LOGIC */}
-<div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6 relative overflow-hidden">
+<div className="bg-slate-100 rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6 relative overflow-hidden">
   <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-50 rounded-full" />
 
   <div className="flex justify-between items-start mb-6 relative z-10">
@@ -850,7 +794,7 @@ const downloadCard = async () => {
 {/* Change newbornExists to patient?.isNewborn */}
 {patient?.isNewborn && (
   <button
-    onClick={() => navigate(`/newborn/${id}`)}
+    onClick={() => navigate(`/patients/${id}/newborn`)}
     className="w-full mt-3 bg-blue-500 text-white py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 transition-all"
   >
     Newborn Care
@@ -864,7 +808,7 @@ const downloadCard = async () => {
 
             {/* VACCINATION TABLE */}
          
-<div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
+<div className="bg-slate-100 rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
   <button 
     onClick={() => setIsVacExpanded(!isVacExpanded)} // Add [isVacExpanded, setIsVacExpanded] = useState(false) at the top
     className="w-full flex items-center justify-between mb-2 group"
@@ -977,7 +921,7 @@ Complete
 </div>
 
 {/* MEDICINE SECTION */}
-<div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+<div className="rounded-3xl border border-slate-100 bg-slate-100 p-5 shadow-sm sm:p-6">
   <button
     type="button"
     onClick={() => setIsMedExpanded((open) => !open)}
@@ -1100,7 +1044,7 @@ Complete
           <div className="min-w-0 space-y-6 xl:col-span-8">
             
             {/* ADD VITALS FORM */}
-            <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-slate-100 bg-slate-100 p-5 shadow-sm sm:p-6">
               <div className="mb-5 flex items-center gap-2 text-slate-800">
                 <Plus size={20} className="bg-blue-300 rounded-lg p-1" />
                 <h3 className="font-bold">Record New Vitals</h3>
@@ -1136,13 +1080,13 @@ Complete
             </div>
 
             {/* CHART SECTION */}
-            <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
+            <div className="bg-slate-100 rounded-3xl border border-slate-100 p-5 shadow-sm sm:p-6">
               <div className="flex items-center gap-2 mb-6">
                 <TrendingUp className="text-blue-500" size={20} />
                 <h3 className="font-bold text-slate-800">Health Trends</h3>
               </div>
               {chartData.length === 0 ? (
-                <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center">
+                <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-100 px-4 text-center">
                   <TrendingUp size={24} className="mb-2 text-slate-400" />
                   <p className="text-sm font-semibold text-slate-700">Not enough data to show a trend</p>
                   <p className="mt-1 text-xs text-slate-500">Record weight or glucose measurements to populate this chart.</p>
@@ -1164,7 +1108,7 @@ Complete
             </div>
 
             {/* VITALS TABLE */}
-            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <div className="bg-slate-100 rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
               <div className="p-6 border-b border-slate-50 flex items-center gap-2">
                 <Activity className="text-rose-500" size={20} />
                 <h3 className="font-bold text-slate-800">Vitals History</h3>
@@ -1196,132 +1140,131 @@ Complete
       </main>
 
       {/* HIDDEN HEALTH CARD FOR DOWNLOAD */}
-                    <div className="fixed top-0 left-0 opacity-0 pointer-events-none">
+      <div className="fixed top-0 left-0 opacity-0 pointer-events-none">
+          <div
+          id="healthCard"
+          style={{
+          width:"650px",
+          height:"360px",
+          background:"#ffffff",
+          borderRadius:"20px",
+          border:"1px solid #e5e7eb",
+          display:"flex",
+          flexDirection:"column",
+          overflow:"hidden",
+          fontFamily:"sans-serif"
+          }}
+          >
 
-<div
-id="healthCard"
-style={{
-width:"650px",
-height:"360px",
-background:"#ffffff",
-borderRadius:"20px",
-border:"1px solid #e5e7eb",
-display:"flex",
-flexDirection:"column",
-overflow:"hidden",
-fontFamily:"sans-serif"
-}}
->
+          {/* HEADER */}
+          <div style={{
+          background:"#1e40af",
+          color:"#fff",
+          padding:"10px 16px",
+          display:"flex",
+          justifyContent:"space-between",
+          alignItems:"center"
+          }}>
+          <div style={{fontWeight:"bold"}}>
+          JeevanVriksha Health ID
+          </div>
 
-{/* HEADER */}
-<div style={{
-background:"#1e40af",
-color:"#fff",
-padding:"10px 16px",
-display:"flex",
-justifyContent:"space-between",
-alignItems:"center"
-}}>
-<div style={{fontWeight:"bold"}}>
-JeevanVriksha Health ID
-</div>
-
-<div style={{fontSize:"12px"}}>
-ID: {id.slice(-6)}
-</div>
-</div>
-
-
-{/* BODY */}
-<div style={{
-flex:1,
-display:"flex",
-alignItems:"center",
-padding:"20px",
-gap:"25px"
-}}>
-
-{/* AVATAR */}
-<div style={{
-width:"100px",
-height:"100px",
-background:"#e5e7eb",
-borderRadius:"12px",
-display:"flex",
-alignItems:"center",
-justifyContent:"center"
-}}>
-<User size={45} color="#374151"/>
-</div>
+          <div style={{fontSize:"12px"}}>
+          ID: {id.slice(-6)}
+          </div>
+          </div>
 
 
-{/* DETAILS */}
-<div style={{flex:1,lineHeight:"24px"}}>
+          {/* BODY */}
+          <div style={{
+          flex:1,
+          display:"flex",
+          alignItems:"center",
+          padding:"20px",
+          gap:"25px"
+          }}>
 
-<div style={{fontSize:"18px",fontWeight:"bold"}}>
-{patient?.name}
-</div>
-
-<div>Village: {patient?.village}</div>
-<div>Age: {patient?.age}</div>
-<div>Blood Group: {patient?.bloodGroup}</div>
-
-<div style={{
-marginTop:"10px",
-fontSize:"12px",
-color:"#6b7280"
-}}>
-Scan QR to access digital health record
-</div>
-
-</div>
-
-
-{/* QR */}
-<div style={{
-display:"flex",
-flexDirection:"column",
-alignItems:"center"
-}}>
-
-<div style={{
-background:"#fff",
-padding:"10px",
-border:"2px solid #e5e7eb",
-borderRadius:"12px"
-}}>
-
-<QRCodeSVG
-value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
-size={140}
-/>
-
-</div>
-
-<div style={{
-marginTop:"6px",
-fontSize:"11px",
-color:"#6b7280"
-}}>
-Secure Medical QR
-</div>
-
-</div>
-
-</div>
+          {/* AVATAR */}
+          <div style={{
+          width:"100px",
+          height:"100px",
+          background:"#e5e7eb",
+          borderRadius:"12px",
+          display:"flex",
+          alignItems:"center",
+          justifyContent:"center"
+          }}>
+          <User size={45} color="#374151"/>
+          </div>
 
 
-{/* FOOTER */}
-<div style={{
-background:"#f3f4f6",
-fontSize:"11px",
-padding:"6px",
-textAlign:"center"
-}}>
-JeevanVriksha Rural Healthcare System
-</div>
+          {/* DETAILS */}
+          <div style={{flex:1,lineHeight:"24px"}}>
 
-</div>
+          <div style={{fontSize:"18px",fontWeight:"bold"}}>
+          {patient?.name}
+          </div>
+
+          <div>Village: {patient?.village}</div>
+          <div>Age: {patient?.age}</div>
+          <div>Blood Group: {patient?.bloodGroup}</div>
+
+          <div style={{
+          marginTop:"10px",
+          fontSize:"12px",
+          color:"#6b7280"
+          }}>
+          Scan QR to access digital health record
+          </div>
+
+          </div>
+
+
+          {/* QR */}
+          <div style={{
+          display:"flex",
+          flexDirection:"column",
+          alignItems:"center"
+          }}>
+
+          <div style={{
+          background:"#fff",
+          padding:"10px",
+          border:"2px solid #e5e7eb",
+          borderRadius:"12px"
+          }}>
+
+          <QRCodeSVG
+          value={`https://jeevanvriksha.vercel.app/health-card/${patient?._id}`}
+          size={140}
+          />
+
+          </div>
+
+          <div style={{
+          marginTop:"6px",
+          fontSize:"11px",
+          color:"#6b7280"
+          }}>
+          Secure Medical QR
+          </div>
+
+          </div>
+
+          </div>
+
+
+          {/* FOOTER */}
+          <div style={{
+          background:"#f3f4f6",
+          fontSize:"11px",
+          padding:"6px",
+          textAlign:"center"
+          }}>
+          JeevanVriksha Rural Healthcare System
+          </div>
+
+          </div>
 
 
 </div>
@@ -1397,5 +1340,4 @@ JeevanVriksha Rural Healthcare System
     </div>
   );
 };
-
 export default PatientProfile;

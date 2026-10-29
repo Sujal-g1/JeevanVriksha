@@ -337,12 +337,13 @@ const TodoPage = () => {
       <main className="mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6 lg:px-8 ">
         {/* Back navigation */}
         <button
-          onClick={() => navigate(-1)}
-          className="mb-7 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition  hover:text-blue-700"
-        >
-          <ArrowLeft size={16} />
-          Back to Dashboard
-        </button>
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-6 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-blue-700 hover:shadow-sm"
+          >
+            <ArrowLeft size={17} />
+            Back to Dashboard
+          </button>
 
         {/* Header */}
         <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">

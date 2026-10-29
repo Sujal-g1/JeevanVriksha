@@ -179,7 +179,7 @@ const handleLogin = async (e) => {
           loading={loading}/>
 
           <p className="mt-8 text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-            Encrypted Worker Terminal 📶
+          Secured by JeevanVriksha  v2.0.1
           </p>
         </motion.div>
       </div>
@@ -187,86 +187,140 @@ const handleLogin = async (e) => {
       {/* ---------------- DESKTOP LAYOUT ---------------- */}
       <div className="hidden md:flex w-full">
         
-        {/* LEFT SIDE: BLUE BRANDING CIRCLES */}
-        {/* <div className="w-1/2 items-center justify-center bg-blue-50 relative overflow-hidden flex border-r border-blue-100">
-          
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], rotate: [0, 10, 0] }}
-            transition={{ duration: 12, repeat: Infinity }}
-            className="absolute w-80 h-80 bg-blue-200 rounded-full opacity-30 blur-2xl"
-          />
+      <div className="relative flex w-1/2 items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-sky-100">
 
-          <motion.div
-            animate={{ scale: [1.1, 1, 1.1], rotate: [0, -10, 0] }}
-            transition={{ duration: 15, repeat: Infinity }}
-            className="absolute w-[500px] h-[500px] bg-blue-300 rounded-full opacity-10 blur-3xl"
-          />
+  {/* Ambient background glow */}
+  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(147,197,253,0.22),transparent_65%)]" />
 
-          <div className="relative text-center px-10 z-10">
-            <motion.img
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              src={Logo}
-              className="w-32 mx-auto mb-6  "
-              alt="logo"
-            />
-            <motion.h2
-              className="text-4xl font-black text-blue-900 tracking-tighter"
-            >
-              Jeevan<span className="text-blue-600">Vriksha</span>
-            </motion.h2>
-            <p className="text-blue-800/60 mt-4 text-lg font-medium max-w-xs mx-auto">
-               Community Management System
-            </p>
-          </div>
-        </div> */}
-        
-         <div className="w-1/2 items-center justify-center bg-blue-50 relative overflow-hidden flex">
-                  
-                  {/* THE CIRCLES (Exactly as your original) */}
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 8, repeat: Infinity }}
-                    className="absolute w-72 h-72 bg-blue-200 rounded-full opacity-20"
-                  />
-        
-                  <motion.div
-                    animate={{ scale: [1.1, 1, 1.1] }}
-                    transition={{ duration: 10, repeat: Infinity }}
-                    className="absolute w-96 h-96 bg-blue-300 rounded-full opacity-10"
-                  />
-        
-                  <div className="relative text-center px-10 z-10">
-                    <motion.img
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6 }}
-                      src={Logo}
-                      className="w-36 mx-auto mb-6 drop-shadow-lg"
-                      alt="logo"
-                    />
-                    <motion.h2
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                      className="text-4xl font-bold text-blue-900 tracking-tighter"
-                    >
-                      JeevanVriksha
-                    </motion.h2>
-                    <p className="text-blue-800/60 mt-3 text-lg font-medium">Community Management System</p>
-                  </div>
-                </div>
+  {/* Original animated circles */}
+  <motion.div
+    animate={{ scale: [1, 1.1, 1], x: [0, 12, 0], y: [0, -10, 0] }}
+    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute h-72 w-72 rounded-full bg-blue-200/30 blur-[1px]"
+  />
+
+  <motion.div
+    animate={{ scale: [1.1, 1, 1.1], x: [0, -15, 0], y: [0, 12, 0] }}
+    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute h-96 w-96 rounded-full bg-blue-300/20"
+  />
+
+  {/* Large soft outer ring */}
+  <motion.div
+    animate={{ scale: [1, 1.04, 1], opacity: [0.25, 0.45, 0.25] }}
+    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute h-[30rem] w-[30rem] rounded-full border border-blue-300/30"
+  />
+
+  {/* Inner decorative ring */}
+  <div className="pointer-events-none absolute h-[22rem] w-[22rem] rounded-full border border-dashed border-blue-300/25" />
+
+  {/* Floating particles */}
+  {[
+    { x: "-145px", y: "-115px", delay: 0 },
+    { x: "145px", y: "-90px", delay: 0.8 },
+    { x: "-125px", y: "115px", delay: 1.4 },
+    { x: "155px", y: "115px", delay: 0.5 },
+    { x: "0px", y: "-180px", delay: 1.8 },
+  ].map((particle, index) => (
+    <motion.span
+      key={index}
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: [0.25, 0.8, 0.25],
+        y: [0, -8, 0],
+      }}
+      transition={{
+        duration: 3 + index * 0.4,
+        repeat: Infinity,
+        delay: particle.delay,
+        ease: "easeInOut",
+      }}
+      style={{
+        left: `calc(50% + ${particle.x})`,
+        top: `calc(50% + ${particle.y})`,
+      }}
+      className="absolute h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.55)]"
+    />
+  ))}
+
+  {/* Main content */}
+  <div className="relative z-10 flex flex-col items-center px-10 text-center">
+
+    {/* Logo glow */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8 }}
+      className="relative mb-7 flex h-36 w-36 items-center justify-center"
+    >
+      <motion.div
+        animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.45, 0.25] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-full bg-blue-300/40 blur-2xl"
+      />
+
+      <motion.img
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        src={Logo}
+        alt="JeevanVriksha logo"
+        className="relative z-10 h-100 w-100 object-contain drop-shadow-[0_8px_16px_rgba(30,64,175,0.15)]"
+      />
+    </motion.div>
+
+    {/* Brand name */}
+    <motion.h2
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 0.2 }}
+      className="text-4xl font-bold tracking-tight text-blue-950"
+    >
+      JeevanVriksha
+    </motion.h2>
+
+    {/* Accent divider */}
+    <motion.div
+      initial={{ width: 0, opacity: 0 }}
+      animate={{ width: 64, opacity: 1 }}
+      transition={{ duration: 0.6, delay: 0.5 }}
+      className="mt-4 h-1 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400"
+    />
+
+    {/* Subtitle */}
+    {/* <motion.p
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.4 }}
+      className="mt-4 text-base font-medium tracking-wide text-blue-800/65"
+    >
+      Smarter Fieldwork. Better Health Outcomes
+    </motion.p> */}
+  </div>
+
+  {/* Bottom decorative accent */}
+  <div className="pointer-events-none absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-200 via-sky-400/60 to-blue-200" />
+
+  {/* Corner accents */}
+  <div className="pointer-events-none absolute left-8 top-8 h-12 w-12 rounded-tl-2xl border-l border-t border-blue-300/40" />
+  <div className="pointer-events-none absolute bottom-8 right-8 h-12 w-12 rounded-br-2xl border-b border-r border-blue-300/40" />
+
+    </ div>
 
         {/* RIGHT SIDE: LOGIN FORM */}
-        <div className="flex w-1/2 items-center justify-center p-12 bg-white">
+        <div className="flex w-1/2 items-center justify-center p-12
+        bg-gradient-to-br from-blue-50 via-white to-sky-100">
+
+<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(147,197,253,0.22),transparent_65%)]" />
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="w-full max-w-md"
           >
             <div className="mb-10">
-              <h2 className="text-4xl font-black text-gray-900 tracking-tight">Worker Sign In</h2>
+              <h2 className="text-4xl font-black text-gray-900 tracking-tight">ASHA & ADMIN Sign In</h2>
               <p className="text-gray-500 mt-2 font-medium">Please enter your government-issued ID to continue.</p>
             </div>
             

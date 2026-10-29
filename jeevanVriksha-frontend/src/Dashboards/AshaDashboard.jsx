@@ -46,7 +46,7 @@ const INITIAL_STATS = {
 };
 
 const panelClass =
-  "rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_22px_rgba(15,23,42,0.035)]";
+  "rounded-2xl border border-slate-200/80 bg-slate-100 shadow-[0_4px_22px_rgba(15,23,42,0.035)]";
 
 const statItems = [
   {
@@ -436,7 +436,7 @@ const AshaDashboard = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-500 shadow-sm">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-xs font-medium text-slate-500 shadow-sm">
               {loading ? (
                 <Loader2 size={15} className="animate-spin text-teal-700" />
               ) : (
@@ -448,7 +448,7 @@ const AshaDashboard = () => {
               type="button"
               onClick={() => fetchDashboardData({ isRefresh: true })}
               disabled={refreshing}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
               Refresh
@@ -619,7 +619,7 @@ const AshaDashboard = () => {
                       className={`overflow-hidden rounded-xl border transition ${
                         isExpanded
                           ? "border-teal-200 bg-teal-50/20"
-                          : "border-slate-200/80 bg-white hover:border-slate-300"
+                          : "border-slate-200/80 bg-slate-100 hover:border-slate-300"
                       }`}
                     >
                       <button
@@ -700,7 +700,7 @@ const AshaDashboard = () => {
                                     <button
                                       type="button"
                                       onClick={() => setShowConfirm(null)}
-                                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                                      className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
                                     >
                                       Cancel
                                     </button>
@@ -732,7 +732,7 @@ const AshaDashboard = () => {
 
   <div className="relative flex flex-1 flex-col">
     <div className="mb-3 flex items-center gap-2">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-teal-100">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/10 text-teal-100">
         <Target size={16} />
       </span>
       <div>
@@ -767,7 +767,7 @@ const AshaDashboard = () => {
     <button
       type="button"
       onClick={() => navigate("/todo")}
-      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/15"
+      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-slate-100/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-100/15"
     >
       View daily tasks
       <ArrowRight size={14} />

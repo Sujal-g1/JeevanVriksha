@@ -72,10 +72,10 @@ const hasValue = (value) =>
 
 function Section({ title, subtitle, icon: Icon, children, action }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-teal-50 p-2.5 text-teal-700">
+          <div className="rounded-xl bg-teal-50 p-2.5 text-blue-700">
             <Icon size={19} />
           </div>
           <div>
@@ -94,7 +94,7 @@ function Section({ title, subtitle, icon: Icon, children, action }) {
 
 function StatCard({ label, value, helper, icon: Icon, tone = "teal" }) {
   const tones = {
-    teal: "bg-teal-50 text-teal-700",
+    teal: "bg-teal-50 text-blue-700",
     blue: "bg-blue-50 text-blue-700",
     violet: "bg-violet-50 text-violet-700",
     amber: "bg-amber-50 text-amber-700",
@@ -102,7 +102,7 @@ function StatCard({ label, value, helper, icon: Icon, tone = "teal" }) {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-100 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium leading-5 text-slate-500 sm:text-sm">
@@ -183,7 +183,7 @@ function TrendChart({
   );
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+    <div className="rounded-2xl border border-slate-200 bg-slate-100 p-4 sm:p-5">
       <div className="mb-5">
         <h3 className="font-bold text-slate-900">{title}</h3>
         <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
@@ -434,8 +434,7 @@ const PregnancyOverview = () => {
     [chronologicalVisits]
   );
 
-  const screeningItems = latest
-    ? [
+  const screeningItems = latest ? [
         ["HIV screening", latest.hivScreening],
         ["Syphilis screening", latest.syphilisScreening],
         ["Hepatitis B screening", latest.hepatitisBScreening],
@@ -445,8 +444,7 @@ const PregnancyOverview = () => {
       ]
     : [];
 
-  const supplementItems = latest
-    ? [
+  const supplementItems = latest ? [
         ["Iron tablets", latest.ironTablets],
         ["Calcium tablets", latest.calciumTablets],
         ["Folic acid", latest.folicAcid],
@@ -520,7 +518,7 @@ const PregnancyOverview = () => {
       <div className="min-h-screen bg-slate-50">
         <AshaNavbar />
         <div className="flex min-h-[70vh] items-center justify-center gap-3 text-slate-600">
-          <RefreshCw className="animate-spin text-teal-700" size={21} />
+          <RefreshCw className="animate-spin text-blue-700" size={21} />
           Loading maternal health records...
         </div>
       </div>
@@ -528,17 +526,19 @@ const PregnancyOverview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f8fb] pb-12">
+    <div className="min-h-screen bg-[#f5f8fb] pb-12
+    bg-[radial-gradient(ellipse_at_top_left,rgba(35,109,181,0.24),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(98,168,232,0.34),transparent_40%),linear-gradient(125deg,#B9DEFF_0%,#E5F2FF_38%,#C9E4FF_70%,#DCEBFA_100%)]">
       <AshaNavbar />
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 pb-10 pt-24 sm:px-6 lg:px-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-teal-700"
-        >
-          <ArrowLeft size={17} />
-          Back
-        </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-blue-700 hover:shadow-sm"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Profile
+                </button>
 
         {error && (
           <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
@@ -551,13 +551,13 @@ const PregnancyOverview = () => {
         )}
 
         {/* Page heading */}
-        <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-800 p-6 text-white shadow-lg sm:p-8">
+        <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-800 via-blue-700 to-blue-800 p-6 text-white shadow-lg sm:p-8">
           <div className="pointer-events-none absolute -right-10 -top-20 h-64 w-64 rounded-full border-[36px] border-white/5" />
-          <div className="pointer-events-none absolute -bottom-24 right-36 h-48 w-48 rounded-full bg-cyan-300/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-24 right-36 h-48 w-48 rounded-full bg-blue-300/10 blur-2xl" />
 
           <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-teal-50">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-100/10 px-3 py-1.5 text-xs font-semibold text-teal-50">
                 <HeartPulse size={14} />
                 Maternal health monitoring
               </div>
@@ -572,11 +572,11 @@ const PregnancyOverview = () => {
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-slate-100/10 px-3 py-2">
                   <UserRound size={15} />
                   {patient?.name || patient?.fullName || "Patient"}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-slate-100/10 px-3 py-2">
                   <CalendarDays size={15} />
                   Due: {formatDate(pregnancy.dueDate)}
                 </span>
@@ -587,7 +587,7 @@ const PregnancyOverview = () => {
               onClick={() =>
                 navigate(`/pregnancy/${id}/`)
               }
-              className="relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-teal-800 shadow-sm transition hover:bg-teal-50"
+              className="relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-100 px-5 py-3 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
             >
               <Plus size={18} />
               Register data
@@ -868,7 +868,7 @@ const PregnancyOverview = () => {
               onClick={() =>
                 navigate(`/patients/${id}/pregnancy/register`)
               }
-              className="inline-flex items-center gap-2 rounded-lg bg-teal-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-teal-800"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-teal-800"
             >
               <Plus size={15} />
               Add visit
@@ -887,12 +887,12 @@ const PregnancyOverview = () => {
               {visits.map((visit, index) => (
                 <article
                   key={visit._id || `${getVisitDate(visit)}-${index}`}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
+                  className="rounded-2xl border border-slate-200 bg-slate-100 p-4 sm:p-5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-teal-50 p-2 text-teal-700">
+                        <div className="rounded-lg bg-teal-50 p-2 text-blue-700">
                           <ClipboardList size={17} />
                         </div>
                         <h3 className="font-bold text-slate-900">
@@ -930,7 +930,7 @@ const PregnancyOverview = () => {
                   )}
 
                   <details className="group mt-4 border-t border-slate-100 pt-4">
-                    <summary className="cursor-pointer list-none text-sm font-semibold text-teal-700">
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-blue-700">
                       <span className="group-open:hidden">View all visit details +</span>
                       <span className="hidden group-open:inline">Hide visit details −</span>
                     </summary>
@@ -974,7 +974,7 @@ const PregnancyOverview = () => {
           )}
         </Section>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="flex items-start gap-3">
             <div className="rounded-xl bg-slate-100 p-2.5 text-slate-600">
               <CheckCircle2 size={19} />
@@ -1021,7 +1021,7 @@ function EmptyState({ text, action }) {
       </p>
       <button
         onClick={action}
-        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
+        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
       >
         <Plus size={16} />
         Register ANC visit

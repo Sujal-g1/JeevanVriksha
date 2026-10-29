@@ -113,7 +113,7 @@ const dangerSignOptions = [
 ];
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-600 focus:ring-4 focus:ring-teal-600/10";
+  "w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10";
 
 const labelClass =
   "mb-1.5 block text-[13px] font-semibold text-slate-700";
@@ -253,24 +253,24 @@ function StepIndicator({ currentStep, onStepClick }) {
               {index < steps.length - 1 && (
                 <div
                   className={`absolute left-[calc(50%+22px)] top-5 h-px w-[calc(100%-44px)] ${
-                    complete ? "bg-teal-600" : "bg-slate-200"
+                    complete ? "bg-blue-600" : "bg-slate-200"
                   }`}
                 />
               )}
               <span
                 className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border text-sm transition ${
                   active
-                    ? "border-teal-700 bg-teal-700 text-white shadow-lg shadow-teal-700/20"
+                    ? "border-blue-700 bg-blue-700 text-white shadow-lg shadow-blue-700/20"
                     : complete
-                      ? "border-teal-600 bg-teal-50 text-teal-700"
-                      : "border-slate-200 bg-white text-slate-400 group-hover:border-teal-300"
+                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      : "border-slate-200 bg-slate-100 text-slate-400 group-hover:border-blue-300"
                 }`}
               >
                 {complete ? <Check size={17} /> : <Icon size={17} />}
               </span>
               <span
                 className={`mt-2 text-xs font-bold ${
-                  active ? "text-teal-800" : "text-slate-600"
+                  active ? "text-blue-800" : "text-slate-600"
                 }`}
               >
                 {step.title}
@@ -289,13 +289,13 @@ function StepIndicator({ currentStep, onStepClick }) {
             {(() => {
               const Icon = steps[currentStep].icon;
               return (
-                <div className="rounded-xl bg-teal-50 p-3 text-teal-700">
+                <div className="rounded-xl bg-blue-50 p-3 text-blue-700">
                   <Icon size={21} />
                 </div>
               );
             })()}
             <div>
-              <p className="text-xs font-semibold text-teal-700">
+              <p className="text-xs font-semibold text-blue-700">
                 STEP {currentStep + 1} OF {steps.length}
               </p>
               <p className="mt-1 font-bold text-slate-900">
@@ -312,7 +312,7 @@ function StepIndicator({ currentStep, onStepClick }) {
         </div>
         <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-teal-600 transition-all duration-300"
+            className="h-full rounded-full bg-blue-600 transition-all duration-300"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
           />
         </div>
@@ -624,7 +624,7 @@ const PregnancyDashboard = () => {
       <div className="min-h-screen bg-slate-50">
         <AshaNavbar />
         <div className="flex min-h-[70vh] items-center justify-center gap-3 text-sm text-slate-600">
-          <RefreshCw size={19} className="animate-spin text-teal-700" />
+          <RefreshCw size={19} className="animate-spin text-blue-700" />
           Loading patient record...
         </div>
       </div>
@@ -643,7 +643,7 @@ const PregnancyDashboard = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <div className="rounded-2xl border border-rose-200 bg-white p-6">
+          <div className="rounded-2xl border border-rose-200 bg-slate-100 p-6">
             <h1 className="font-bold text-slate-900">
               Could not load patient
             </h1>
@@ -735,7 +735,7 @@ const PregnancyDashboard = () => {
                 hint="Include the current pregnancy."
               />
               <TextField
-                label="Para — births reaching viability"
+                label="Parity — births reaching viability"
                 name="para"
                 type="number"
                 min="0"
@@ -957,7 +957,7 @@ const PregnancyDashboard = () => {
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-                <HeartPulse size={17} className="text-teal-700" />
+                <HeartPulse size={17} className="text-blue-700" />
                 Measurement guidance
               </p>
               <p className="mt-2 text-xs leading-6 text-slate-500">
@@ -1112,7 +1112,7 @@ const PregnancyDashboard = () => {
                       className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 text-sm transition ${
                         checked
                           ? "border-rose-300 bg-rose-50 text-rose-800"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                          : "border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300"
                       }`}
                     >
                       <input
@@ -1224,7 +1224,7 @@ const PregnancyDashboard = () => {
       <main className="mx-auto max-w-7xl px-4 pb-10 pt-24 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
-          className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-teal-700"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-blue-700"
         >
           <ArrowLeft size={16} />
           Back to patient profile
@@ -1233,7 +1233,7 @@ const PregnancyDashboard = () => {
         {/* Page heading */}
         <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-teal-700">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-700">
               <HeartPulse size={15} />
               Maternal healthcare
             </div>
@@ -1249,7 +1249,7 @@ const PregnancyDashboard = () => {
           <button
             type="button"
             onClick={() => navigate(`/patients/${id}/pregnancy`)}
-            className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:self-center"
+            className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:self-center"
           >
             <Activity size={16} />
             View pregnancy overview
@@ -1257,9 +1257,9 @@ const PregnancyDashboard = () => {
         </header>
 
         {/* Patient summary */}
-        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-100 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
               <UserRound size={22} />
             </div>
             <div>
@@ -1358,7 +1358,7 @@ const PregnancyDashboard = () => {
         </AnimatePresence>
 
         {/* Main form */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
           <div className="border-b border-slate-100 px-5 py-6 sm:px-8">
             <StepIndicator
               currentStep={currentStep}
@@ -1377,7 +1377,7 @@ const PregnancyDashboard = () => {
                   transition={{ duration: 0.16 }}
                 >
                   <div className="mb-7">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-teal-700">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">
                       Section {currentStep + 1} of {steps.length}
                     </p>
                     <h2 className="mt-2 text-xl font-bold text-slate-900">
@@ -1397,7 +1397,7 @@ const PregnancyDashboard = () => {
                   type="button"
                   onClick={() => changeStep(currentStep - 1)}
                   disabled={currentStep === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft size={16} />
                   Previous
@@ -1408,7 +1408,7 @@ const PregnancyDashboard = () => {
                     type="button"
                     onClick={saveData}
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-4 py-3 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50 disabled:opacity-60"
                   >
                     {saving ? (
                       <RefreshCw size={16} className="animate-spin" />
@@ -1422,7 +1422,7 @@ const PregnancyDashboard = () => {
                     <button
                       type="button"
                       onClick={() => changeStep(currentStep + 1)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
                     >
                       Continue
                       <ArrowRight size={16} />
@@ -1432,7 +1432,7 @@ const PregnancyDashboard = () => {
                       type="button"
                       onClick={saveData}
                       disabled={saving}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-60"
                     >
                       {saving ? (
                         <RefreshCw size={16} className="animate-spin" />
@@ -1484,9 +1484,9 @@ const PregnancyDashboard = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-teal-50 p-2 text-teal-700">
+                  <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
                     <ClipboardList size={16} />
                   </div>
                   <h3 className="text-xs font-bold text-slate-800">
@@ -1496,7 +1496,7 @@ const PregnancyDashboard = () => {
 
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-teal-600 transition-all"
+                    className="h-full rounded-full bg-blue-600 transition-all"
                     style={{
                       width: `${(completedFields / Object.keys(initialPregnancy).length) * 100}%`,
                     }}
@@ -1509,9 +1509,9 @@ const PregnancyDashboard = () => {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck size={17} className="text-teal-700" />
+                  <ShieldCheck size={17} className="text-blue-700" />
                   <h3 className="text-xs font-bold text-slate-800">
                     Before finishing
                   </h3>
@@ -1519,15 +1519,15 @@ const PregnancyDashboard = () => {
 
                 <ul className="mt-3 space-y-3 text-xs leading-5 text-slate-600">
                   <li className="flex gap-2">
-                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-teal-600" />
+                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-blue-600" />
                     Confirm dates and measurements against the record.
                   </li>
                   <li className="flex gap-2">
-                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-teal-600" />
+                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-blue-600" />
                     Document screening status without inferring results.
                   </li>
                   <li className="flex gap-2">
-                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-teal-600" />
+                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-blue-600" />
                     Record the follow-up and referral plan.
                   </li>
                 </ul>
